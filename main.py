@@ -1,5 +1,6 @@
 from datetime import date
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, status, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 
 tags = [
@@ -27,6 +28,9 @@ app = FastAPI(
     description="Yet another tool for Encouraging Extra-Effective Engagement!",
     openapi_tags=tags,
 )
+auth_scheme = HTTPBearer()
+with open('.usertokens') as f:
+    usertokens = f.readlines()
 
 
 class Message(BaseModel):
@@ -79,24 +83,35 @@ class Score(BaseModel):
     score: int
 
 
+def token(creds: HTTPAuthorizationCredentials = Depends(auth_scheme)):
+    if creds.credentials not in usertokens:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    else:
+        return creds
+
+
 @app.get("/message/{msg_id}", tags=['Messages'])
 def read_message(msg_id: int):
     return {"item_id": msg_id}
 
 
 @app.put("/message/{msg_id}", tags=['Messages'])
-def add_message(msg_id: int, message: Message):
+def add_message(msg_id: int, message: Message, token: str = Depends(token)):
     return {"msg_id": msg_id, "message": message}
 
 
 @app.patch("/message/{msg_id}", tags=['Messages'])
-def update_message(msg_id: int, message: Message):
+def update_message(msg_id: int, message: Message, token: str = Depends(token)):
     # follow partial schema docs, search for 'patch'
     return message
 
 
 @app.put("/pin/{msg_id}", tags=["Messages"])
-def pin_message(msg_id):
+def pin_message(msg_id, token: str = Depends(token)):
     return f'pinned {msg_id}'
 
 
@@ -106,12 +121,12 @@ def get_user(user_id: int):
 
 
 @app.put("/user/{user_id}", tags=["Users"])
-def add_user(user_id: int, data: User):
+def add_user(user_id: int, data: User, token: str = Depends(token)):
     return {"user_id": user_id, "data": data}
 
 
 @app.patch("/user/{user_id}", tags=["Users"])
-def update_user(user_id: int, data: User):
+def update_user(user_id: int, data: User, token: str = Depends(token)):
     # TODO partial
     return {"user_id": user_id, "data": data}
 
@@ -122,30 +137,30 @@ def get_user_score(user_id: int):
 
 
 @app.post("/reaction", tags=['Reactions'])
-def add_reaction(reaction: Reaction):
+def add_reaction(reaction: Reaction, token: str = Depends(token)):
     return {"msg_id": reaction.msg_id, "user_id": reaction.msg_id, "reaction": reaction.emoji}
 
 
 @app.delete('/reaction', tags=['Reactions'])
-def delete_reaction(reaction: Reaction):
+def delete_reaction(reaction: Reaction, token: str = Depends(token)):
     return {"msg_id": reaction.msg_id, "user_id": reaction.msg_id, "reaction": reaction.emoji}
 
 
 @app.put("/channel/{chan_id}", tags=['Channels'])
-def add_channel(chan_id: int, channel: Channel):
+def add_channel(chan_id: int, channel: Channel, token: str = Depends(token)):
     return {"name": channel.name}
 
 
 @app.get("/channel/{chan_id}", tags=['Channels'])
-def read_channel(chan_id: int):
+def get_channel(chan_id: int):
     return chan_id
 
 
 @app.patch("/channel/{chan_id}", tags=['Channels'])
-def update_channel(chan_id: int, channel: Channel):
+def update_channel(chan_id: int, channel: Channel, token: str = Depends(token)):
     return {"name": channel.name}
 
 
 @app.post("/voice_event", tags=["Events"])
-def add_voice_event(event: VoiceEvent):
+def add_voice_event(event: VoiceEvent, token: str = Depends(token)):
     return {"user": event.user_id, "action": event.type, "time": event.timestamp}
