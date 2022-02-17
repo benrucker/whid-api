@@ -106,6 +106,11 @@ def update_user(user_id: int, data: User):
     return {"user_id": user_id, "data": data}
 
 
+@app.get("/user/{user_id}/score", tags=["Users"])
+def get_user_score(user_id: int):
+    return {"user_id": user_id, "score": 500}
+
+
 @app.post("/reaction", tags=['Reactions'])
 def add_reaction(reaction: Reaction):
     return {"msg_id": reaction.msg_id, "user_id": reaction.msg_id, "reaction": reaction.emoji}
