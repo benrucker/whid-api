@@ -8,6 +8,10 @@ tags = [
         "description": "Store and update messages. Use `PUT` for adding and `PATCH` for updating."
     },
     {
+        "name": "Users",
+        "description": "Manage user metadata"
+    },
+    {
         "name": "Channels",
         "description": "Manage records of channels."
     },
@@ -29,11 +33,17 @@ class Message(BaseModel):
     msg_id: int
     timestamp: str
     content: str
+    # Attachments: relationship()
     author: int
     replying_to: int | None = None
     edited: bool = False
     edited_timestamp: int | None = None
     deleted: bool = False
+
+
+class Attachments(BaseModel):
+    msg_id: int
+    url: str
 
 
 class Reaction(BaseModel):
