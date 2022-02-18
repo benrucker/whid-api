@@ -5,6 +5,8 @@ from .database import Base
 
 
 class Message(Base):
+    __tablename__ = "message"
+
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     timestamp = Column(DateTime, nullable=False)
     content = Column(String)
@@ -19,18 +21,24 @@ class Message(Base):
 
 
 class Attachment(Base):
+    __tablename__ = "attachment"
+
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     message = Column(Integer, ForeignKey("message.id"), nullable=False)
     url = Column(String, nullable=False)
 
 
 class Reaction(Base):
+    __tablename__ = "reaction"
+
     message = Column(Integer, ForeignKey("message.id"), primary_key=True, nullable=False)
     user = Column(Integer, ForeignKey("user.id"), primary_key=True, nullable=False)
     emoji = Column(String, primary_key=True, nullable=False)
 
 
 class Channel(Base):
+    __tablename__ = "channel"
+
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     name = Column(String, nullable=False)
     category = Column(String, nullable=False)
@@ -38,12 +46,16 @@ class Channel(Base):
 
 
 class VoiceEvent(Base):
+    __tablename__ = "voice_event"
+
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     type = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
 
 class User(Base):
+    __tablename__ = "user"
+
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     username = Column(String, nullable=False)
     nickname = Column(String)
@@ -55,6 +67,8 @@ class User(Base):
 
 
 class Score(Base):
+    __tablename__ = "score"
+
     iteration = Column(Integer, primary_key=True, index=True, nullable=False)
     user_id = Column(Integer, ForeignKey("user.id"), primary_key=True, nullable=False)
     date_processed = Column(Date, nullable=False)
