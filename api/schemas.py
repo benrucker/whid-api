@@ -95,6 +95,8 @@ class UserCreate(UserBase):
 
 
 class User(UserBase):
+    messages: list[Message]
+
     class Config:
         orm_mode = True
 

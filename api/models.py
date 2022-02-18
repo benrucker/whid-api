@@ -47,6 +47,7 @@ class User(Base):
     username = Column(String, nullable=False)
     nickname = Column(String)
     numbers = Column(String(4), nullable=False)
+    messages = relationship("Message", back_populates="author")
 
 
 class Score(Base):
