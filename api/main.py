@@ -1,7 +1,10 @@
 from datetime import date
 from fastapi import Depends, FastAPI, status, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from . import crud, models, schemas
+from .database import SessionLocal, engine
 
 tags = [
     {
@@ -33,56 +36,6 @@ with open('.usertokens') as f:
     usertokens = f.readlines()
 
 
-class Message(BaseModel):
-    msg_id: int
-    timestamp: str
-    content: str
-    # Attachments: relationship()
-    author: int
-    replying_to: int | None = None
-    edited: bool = False
-    edited_timestamp: int | None = None
-    deleted: bool = False
-
-
-class Attachments(BaseModel):
-    msg_id: int
-    url: str
-
-
-class Reaction(BaseModel):
-    user_id: int
-    msg_id: int
-    emoji: str
-
-
-class Channel(BaseModel):
-    chan_id: int
-    name: str
-    category: str
-    thread: bool = False
-
-
-class VoiceEvent(BaseModel):
-    user_id: int
-    type: str
-    timestamp: str
-
-
-class User(BaseModel):
-    user_id: int
-    username: str
-    nickname: str | None = None
-    numbers: int
-
-
-class Score(BaseModel):
-    iteration: int
-    user_id: int
-    date_processed: date
-    score: int
-
-
 def token(creds: HTTPAuthorizationCredentials = Depends(auth_scheme)):
     if creds.credentials not in usertokens:
         raise HTTPException(
@@ -94,13 +47,21 @@ def token(creds: HTTPAuthorizationCredentials = Depends(auth_scheme)):
         return creds
 
 
-@app.get("/message/{msg_id}", tags=['Messages'])
-def read_message(msg_id: int):
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@app.get("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
+def read_message(msg_id: int, db: Session = Depends(get_db)):
     return {"item_id": msg_id}
 
 
 @app.put("/message/{msg_id}", tags=['Messages'])
-def add_message(msg_id: int, message: Message, token: str = Depends(token)):
+def add_message(msg_id: int, message: schemas.MessageCreate, token: str = Depends(token)):
     return {"msg_id": msg_id, "message": message}
 
 
