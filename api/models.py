@@ -1,4 +1,3 @@
-from operator import index
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Date
 from sqlalchemy.orm import relationship
 
@@ -9,12 +8,13 @@ class Message(Base):
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     timestamp = Column(DateTime, nullable=False)
     content = Column(String)
-    attachments = relationship("Attachments", back_populates="message")
     author = Column(Integer, ForeignKey("user.id"), nullable=False)
     replying_to = Column(Integer, ForeignKey("user.id"))
     edited = Column(Boolean)
     edited_timestamp = Column(DateTime)
     deleted = Column(Boolean, default=False, nullable=False)
+
+    attachments = relationship("Attachments", back_populates="message")
 
 
 class Attachment(Base):
@@ -47,6 +47,7 @@ class User(Base):
     username = Column(String, nullable=False)
     nickname = Column(String)
     numbers = Column(String(4), nullable=False)
+
     messages = relationship("Message", back_populates="author")
 
 
