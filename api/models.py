@@ -13,6 +13,7 @@ class Message(Base):
     edited = Column(Boolean)
     edited_timestamp = Column(DateTime)
     deleted = Column(Boolean, default=False, nullable=False)
+    pinned = Column(Boolean, default=False, nullable=False)
 
     attachments = relationship("Attachments", back_populates="message")
 
@@ -24,9 +25,9 @@ class Attachment(Base):
 
 
 class Reaction(Base):
-    id = Column(Integer, primary_key=True, index=True, nullable=False)
-    message = Column(Integer, ForeignKey("message.id"), nullable=False)
-    emoji = Column(String, nullable=False)
+    message = Column(Integer, ForeignKey("message.id"), primary_key=True, nullable=False)
+    user = Column(Integer, ForeignKey("user.id"), primary_key=True, nullable=False)
+    emoji = Column(String, primary_key=True, nullable=False)
 
 
 class Channel(Base):
@@ -49,6 +50,8 @@ class User(Base):
     numbers = Column(String(4), nullable=False)
 
     messages = relationship("Message", back_populates="author")
+    scores = relationship("Score", back_populates="user")
+    reactions = relationship("Reaction", back_populates="user")
 
 
 class Score(Base):

@@ -26,6 +26,7 @@ class MessageBase(BaseModel):
     edited: bool = False
     edited_timestamp: int | None = None
     deleted: bool = False
+    pinned: bool = False
 
 
 class MessageCreate(MessageBase):
@@ -83,6 +84,22 @@ class VoiceEvent(VoiceEventBase):
         orm_mode = True
 
 
+class ScoreBase(BaseModel):
+    iteration: int
+    user_id: int
+    date_processed: date
+    score: int
+
+
+class ScoreCreate(ScoreBase):
+    pass
+
+
+class Score(ScoreBase):
+    class Config:
+        orm_mode = True
+
+
 class UserBase(BaseModel):
     user_id: int
     username: str
@@ -96,22 +113,7 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     messages: list[Message]
+    scores: list[Score]
 
-    class Config:
-        orm_mode = True
-
-
-class ScoreBase(BaseModel):
-    iteration: int
-    user_id: int
-    date_processed: date
-    score: int
-
-
-class ScoreCreate(ScoreBase):
-    pass
-
-
-class Score(ScoreBase):
     class Config:
         orm_mode = True
