@@ -4,7 +4,7 @@ from .database import SessionLocal
 
 auth_scheme = HTTPBearer()
 with open('.usertokens') as f:
-    usertokens = f.readlines()
+    usertokens = [x.strip() for x in f.readlines()]
 
 
 def token(creds: HTTPAuthorizationCredentials = Depends(auth_scheme)):
