@@ -26,7 +26,11 @@ tags = [
     }
 ]
 
-models.Base.metadata.create_all(bind=engine)
+try:
+    models.Base.metadata.create_all(bind=engine)
+except:
+    pass
+
 app = FastAPI(
     title="what have i done API",
     description="Yet another tool for Encouraging Extra-Effective Engagement!",
