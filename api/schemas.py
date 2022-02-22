@@ -1,10 +1,10 @@
 from datetime import date, datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 
 class AttachmentBase(BaseModel):
     msg_id: int
-    url: str
+    url: HttpUrl
 
 
 class AttachmentCreate(AttachmentBase):
@@ -20,7 +20,7 @@ class MessageBase(BaseModel):
     id: int
     timestamp: datetime
     content: str
-    attachments: list[Attachment] = []
+    attachments: list[Attachment] | None = None
     author: int
     replying_to: int | None = None
     edited: bool = False

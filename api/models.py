@@ -24,7 +24,7 @@ class Attachment(Base):
     __tablename__ = "attachment"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    message = Column(Integer, ForeignKey("message.id"), nullable=False)
+    msg_id = Column(Integer, ForeignKey("message.id"), nullable=False)
     url = Column(String, nullable=False)
 
 
