@@ -9,6 +9,10 @@ from .dependencies import get_db, token
 
 tags = [
     {
+        "name": "Scores",
+        "description": "Add and retrieve scores"
+    },
+    {
         "name": "Messages",
         "description": "Store and update messages. Use `PUT` for adding and `PATCH` for updating."
     },
@@ -18,11 +22,15 @@ tags = [
     },
     {
         "name": "Channels",
-        "description": "Manage records of channels."
+        "description": "Manage records of channels"
     },
     {
         "name": "Reactions",
-        "description": "Add and remove reactions."
+        "description": "Add and remove reactions"
+    },
+    {
+        "name": "Misc Events",
+        "description": "Log other event types"
     }
 ]
 
@@ -93,10 +101,16 @@ def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(ge
     return db_user
 
 
-@app.get("/user/{user_id}/score", response_model=schemas.Score, tags=["Users"])
+@app.get("/score", response_model=schemas.Score, tags=["Scores"])
 def get_user_score(user_id: int, db: Session = Depends(get_db)):
     score = crud.get_user_score(db, user_id)
     return score
+
+
+@app.post("/score", tags=["Scores"])
+def add_scores(scores: list[schemas.ScoreCreate], db: Session = Depends(get_db)):
+    db_scores = crud.add_scores(db, scores)
+    return db_scores
 
 
 @app.post("/reaction", tags=['Reactions'])
@@ -124,6 +138,6 @@ def update_channel(chan_id: int, channel: schemas.Channel, db: Session = Depends
     return {"name": channel.name}
 
 
-@app.post("/voice_event", tags=["Events"])
+@app.post("/voice_event", tags=["Misc Events"])
 def add_voice_event(event: schemas.VoiceEvent, db: Session = Depends(get_db)):
     return {"user": event.user_id, "action": event.type, "time": event.timestamp}

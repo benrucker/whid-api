@@ -75,6 +75,21 @@ def get_user_score(db: Session, user_id: int):
     return user.scores.order_by(models.Score.iteration.desc()).first()
 
 
+def add_score_intermediate(db: Session, score: schemas.Score):
+    db_score = models.Score(
+        **score.dict(),
+    )
+    db.add(db_score)
+    return db_score
+
+
+def add_scores(db: Session, scores: list[schemas.Score]):
+    db_scores = scores.map(lambda s: add_score_intermediate(db, s))
+    db.commit()
+    db.refresh(db_scores)
+    return db_scores
+
+
 def add_reaction(db: Session, reaction: schemas.Reaction):
     db_reaction = models.Reaction(
         **reaction.dict(),
