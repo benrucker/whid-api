@@ -124,7 +124,10 @@ def add_channel(db: Session, channel: schemas.ChannelCreate):
 
 
 def get_channel(db: Session, channel_id: int):
-    return db.query(models.Channel).filter(models.Channel.id == channel_id).first()
+    db_chan = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
+    if db_chan is None:
+        raise KeyError()
+    return db_chan
 
 
 def update_channel(db: Session, channel_id: int, channel: schemas.Channel):

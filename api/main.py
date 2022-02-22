@@ -47,6 +47,11 @@ app = FastAPI(
 )
 
 
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+
 @app.get("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
 def read_message(msg_id: int, db: Session = Depends(get_db)):
     try:
@@ -124,13 +129,19 @@ def delete_reaction(reaction: schemas.Reaction, db: Session = Depends(get_db)):
 
 
 @app.put("/channel/{chan_id}", tags=['Channels'])
-def add_channel(chan_id: int, channel: schemas.Channel, db: Session = Depends(get_db)):
-    return {"name": channel.name}
+def add_channel(chan_id: int, channel: schemas.ChannelCreate, db: Session = Depends(get_db)):
+    db_channel = crud.add_channel(db, channel)
+    return db_channel
 
 
-@app.get("/channel/{chan_id}", tags=['Channels'])
+@app.get("/channel/{chan_id}", response_model=schemas.ChannelBase, tags=['Channels'])
 def get_channel(chan_id: int, db: Session = Depends(get_db)):
-    return chan_id
+    try:
+        db_channel = crud.get_channel(db, chan_id)
+        return db_channel
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Channel not found")
 
 
 @app.patch("/channel/{chan_id}", tags=['Channels'])

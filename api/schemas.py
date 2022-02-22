@@ -66,7 +66,7 @@ class Reaction(ReactionBase):
 
 
 class ChannelBase(BaseModel):
-    chan_id: int
+    id: int
     name: str
     category: str
     thread: bool = False
@@ -80,7 +80,7 @@ class ChannelCreate(ChannelBase):
 
 
 class Channel(ChannelBase):
-    pass
+    messages: list[Message]
 
 
 class VoiceEventBase(BaseModel):
