@@ -4,7 +4,10 @@ from . import models, schemas
 
 
 def get_message(db: Session, message_id: int):
-    return db.query(models.Message).filter(models.Message.id == message_id).first()
+    db_msg = db.query(models.Message).filter(models.Message.id == message_id).first()
+    if db_msg is None:
+        raise KeyError()
+    return db_msg
 
 
 def add_message(db: Session, message: schemas.MessageCreate):
@@ -17,11 +20,11 @@ def add_message(db: Session, message: schemas.MessageCreate):
     return db_message
 
 
-def update_message(db: Session, message_id: int, message: schemas.Message):
+def update_message(db: Session, message_id: int, message: schemas.MessageUpdate):
     db_message = get_message(db, message_id)
     if db_message is None:
         raise KeyError()
-    for attr, value in message.dict().items():
+    for attr, value in message.items():
         setattr(db_message, attr, value)
     db.commit()
     db.refresh(db_message)

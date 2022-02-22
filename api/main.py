@@ -40,18 +40,23 @@ app = FastAPI(
 
 @app.get("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
 def read_message(msg_id: int, db: Session = Depends(get_db)):
-    return {"item_id": msg_id}
+    try:
+        return crud.get_message(db, msg_id)
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
+    
 
 
 @app.put("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
 def add_message(msg_id: int, message: schemas.MessageCreate, db: Session = Depends(get_db)):
-    return {"msg_id": msg_id, "message": message}
+    msg = crud.add_message(db, message)
+    return msg
 
 
 @app.patch("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
-def update_message(msg_id: int, message: schemas.MessageCreate, db: Session = Depends(get_db)):
-    # follow partial schema docs, search for 'patch'
-    return message
+def update_message(msg_id: int, message: schemas.MessageUpdate, db: Session = Depends(get_db)):
+    msg = crud.update_message(db, msg_id, message.dict(exclude_unset=True))
+    return msg
 
 
 @app.delete("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
@@ -61,8 +66,8 @@ def delete_message(msg_id: int, db: Session = Depends(get_db)):
 
 @app.put("/pin/{msg_id}", response_model=schemas.Message, tags=["Messages"])
 def pin_message(msg_id, db: Session = Depends(get_db)):
-    # use crud.update_message
-    return f'pinned {msg_id}'
+    msg = crud.update_message(db, msg_id, {"pinned": True})
+    return msg
 
 
 @app.get("/user/{user_id}", response_model=schemas.User, tags=["Users"])

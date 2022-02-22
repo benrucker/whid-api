@@ -7,7 +7,7 @@ from .database import Base
 class Message(Base):
     __tablename__ = "message"
 
-    id = Column(Integer, primary_key=True, index=True, nullable=False)
+    id = Column(Integer, primary_key=True, nullable=False)
     timestamp = Column(DateTime, nullable=False)
     content = Column(String)
     author = Column(Integer, ForeignKey("user.id"), nullable=False)
@@ -17,13 +17,13 @@ class Message(Base):
     deleted = Column(Boolean, default=False, nullable=False)
     pinned = Column(Boolean, default=False, nullable=False)
 
-    attachments = relationship("Attachments", back_populates="message")
+    attachments = relationship("Attachment")
 
 
 class Attachment(Base):
     __tablename__ = "attachment"
 
-    id = Column(Integer, primary_key=True, index=True, nullable=False)
+    id = Column(Integer, primary_key=True, nullable=False)
     message = Column(Integer, ForeignKey("message.id"), nullable=False)
     url = Column(String, nullable=False)
 
@@ -61,9 +61,9 @@ class User(Base):
     nickname = Column(String)
     numbers = Column(String(4), nullable=False)
 
-    messages = relationship("Message", back_populates="author")
-    scores = relationship("Score", back_populates="user")
-    reactions = relationship("Reaction", back_populates="user")
+    messages = relationship("Message", foreign_keys=[Message.author])
+    scores = relationship("Score")
+    reactions = relationship("Reaction")
 
 
 class Score(Base):

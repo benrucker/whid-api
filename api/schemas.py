@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from pydantic import BaseModel
 
 
@@ -18,13 +18,13 @@ class Attachment(AttachmentBase):
 
 class MessageBase(BaseModel):
     id: int
-    timestamp: str
+    timestamp: datetime
     content: str
-    attachments: list[Attachment]
+    attachments: list[Attachment] = []
     author: int
     replying_to: int | None = None
     edited: bool = False
-    edited_timestamp: int | None = None
+    edited_timestamp: datetime | None = None
     deleted: bool = False
     pinned: bool = False
 
@@ -34,6 +34,17 @@ class MessageCreate(MessageBase):
 
 
 class Message(MessageBase):
+    class Config:
+        orm_mode = True
+
+
+class MessageUpdate(BaseModel):
+    content: str | None
+    edited: bool | None = True
+    edited_timestamp: datetime | None
+    deleted: bool | None
+    pinned: bool | None
+
     class Config:
         orm_mode = True
 
@@ -72,7 +83,7 @@ class Channel(ChannelBase):
 class VoiceEventBase(BaseModel):
     user_id: int
     type: str
-    timestamp: str
+    timestamp: datetime
 
 
 class VoiceEventCreate(VoiceEventBase):
