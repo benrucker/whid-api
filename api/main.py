@@ -89,13 +89,14 @@ def add_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_d
 
 @app.patch("/user/{user_id}", response_model=schemas.User, tags=["Users"])
 def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(get_db)):
-    db_user = crud.update_user(db, user_id, data)
+    db_user = crud.update_user(db, user_id, data.dict(exclude_unset=True))
     return db_user
 
 
-@app.get("/user/{user_id}/score", tags=["Users"])
+@app.get("/user/{user_id}/score", response_model=schemas.Score, tags=["Users"])
 def get_user_score(user_id: int, db: Session = Depends(get_db)):
-    return {"user_id": user_id, "score": 500}
+    score = crud.get_user_score(db, user_id)
+    return score
 
 
 @app.post("/reaction", tags=['Reactions'])

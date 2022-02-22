@@ -61,7 +61,7 @@ def update_user(db: Session, user_id: int, user: schemas.User):
     db_user = get_user(db, user_id)
     if db_user is None:
         raise KeyError()
-    for attr, value in user.dict().items():
+    for attr, value in user.items():
         setattr(db_user, attr, value)
     db.commit()
     db.refresh(db_user)
