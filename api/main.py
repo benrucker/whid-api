@@ -38,13 +38,14 @@ app = FastAPI(
     dependencies=[Depends(token)]
 )
 
+
 @app.get("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
 def read_message(msg_id: int, db: Session = Depends(get_db)):
     try:
         return crud.get_message(db, msg_id)
     except KeyError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
 
 @app.put("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
@@ -70,20 +71,26 @@ def pin_message(msg_id, db: Session = Depends(get_db)):
     return msg
 
 
-@app.get("/user/{user_id}", response_model=schemas.User, tags=["Users"])
+@app.get("/user/{user_id}", response_model=schemas.UserBase, tags=["Users"])
 def get_user(user_id: int, db: Session = Depends(get_db)):
-    return {"user_id": user_id}
+    try:
+        db_user = crud.get_user(db, user_id)
+        return db_user
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
 
 @app.put("/user/{user_id}", response_model=schemas.User, tags=["Users"])
-def add_user(user_id: int, data: schemas.User, db: Session = Depends(get_db)):
-    return {"user_id": user_id, "data": data}
+def add_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud.add_user(db, user)
+    return db_user
 
 
 @app.patch("/user/{user_id}", response_model=schemas.User, tags=["Users"])
-def update_user(user_id: int, data: schemas.User, db: Session = Depends(get_db)):
-    # TODO partial
-    return {"user_id": user_id, "data": data}
+def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(get_db)):
+    db_user = crud.update_user(db, user_id, data)
+    return db_user
 
 
 @app.get("/user/{user_id}/score", tags=["Users"])

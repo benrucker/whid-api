@@ -25,7 +25,7 @@ def _declarative_base_auto_instantiate_nested(self, **kwargs):
             if relationships[k].direction.name == 'ONETOMANY':
                 childclass = getattr(
                     sys.modules[self.__module__], relationships[k].argument)
-                setattr(self, k, [childclass(**elem) for elem in kwargs[k]])
+                setattr(self, k, [childclass(**elem) for elem in (kwargs[k] if kwargs[k] else [])])
         else:
             setattr(self, k, kwargs[k])
 

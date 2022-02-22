@@ -41,7 +41,10 @@ def delete_message(db: Session, message_id: int):
 
 
 def get_user(db: Session, user_id: int):
-    return db.query(models.User).filter(models.User.id == user_id).first()
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user is None:
+        raise KeyError()
+    return user
 
 
 def add_user(db: Session, user: schemas.UserCreate):
