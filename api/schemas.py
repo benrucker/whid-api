@@ -23,6 +23,7 @@ class MessageBase(BaseModel):
     attachments: list[Attachment] | None = None
     author: int
     replying_to: int | None = None
+    channel: int
     edited: bool = False
     edited_timestamp: datetime | None = None
     deleted: bool = False
@@ -69,7 +70,7 @@ class ChannelBase(BaseModel):
     name: str
     category: str
     thread: bool = False
-
+    
     class Config:
         orm_mode = True
 
@@ -86,7 +87,7 @@ class VoiceEventBase(BaseModel):
     user_id: int
     type: str
     timestamp: datetime
-
+    
     class Config:
         orm_mode = True
 

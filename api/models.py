@@ -12,6 +12,7 @@ class Message(Base):
     content = Column(String)
     author = Column(Integer, ForeignKey("user.id"), nullable=False)
     replying_to = Column(Integer, ForeignKey("user.id"))
+    channel = Column(Integer, ForeignKey("channel.id"), nullable=False)
     edited = Column(Boolean)
     edited_timestamp = Column(DateTime)
     deleted = Column(Boolean, default=False, nullable=False)
@@ -43,6 +44,8 @@ class Channel(Base):
     name = Column(String, nullable=False)
     category = Column(String, nullable=False)
     thread = Column(Boolean, default=False, nullable=False)
+
+    messages = relationship("Message")
 
 
 class VoiceEvent(Base):
