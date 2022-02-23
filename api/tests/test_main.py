@@ -182,39 +182,9 @@ class TestMessages:
         )
         assert response.status_code == 404
 
-    def test_user(self, client):
-        response = self.client.get(
-            "/user/1",
-            headers=self.auth,
-        )
-        assert response.status_code == 404
-
-        response = self.client.put(
-            "/user/1",
-            headers=self.auth,
-            json={
-                "id": 1,
-                "username": "test",
-                "nickname": "testname",
-                "numbers": 8098,
-            }
-        )
-        assert response.status_code == 200
-
-        response = self.client.get(
-            "/user/1",
-            headers=self.auth,
-        )
-        assert response.status_code == 200
-        assert response.json()['id'] == 1
-        assert response.json()['username'] == 'test'
-        assert response.json()['nickname'] == 'testname'
-        assert response.json()['numbers'] == 8098
-
-
 class TestChannels:
     client = TestClient(app)
-    auth = {"Authorization": f"Bearer hello"}
+    auth = {"Authorization": "Bearer hello"}
 
     def test_channel(self, client):
         response = self.client.get(
@@ -272,3 +242,65 @@ class TestChannels:
         assert response.json()['name'] == 'new channel'
         assert response.json()['category'] == 'general2'
 
+class TestUsers():
+    client = TestClient(app)
+    auth = {"Authorization": "Bearer hello"}
+
+
+    def test_user(self, client):
+        response = self.client.get(
+            "/user/1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
+        response = self.client.put(
+            "/user/1",
+            headers=self.auth,
+            json={
+                "id": 1,
+                "username": "test",
+                "nickname": "testname",
+                "numbers": 8098,
+            }
+        )
+        assert response.status_code == 200
+
+        response = self.client.get(
+            "/user/1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert response.json()['id'] == 1
+        assert response.json()['username'] == 'test'
+        assert response.json()['nickname'] == 'testname'
+        assert response.json()['numbers'] == 8098
+
+    def test_user_update(self, client):
+        response = self.client.put(
+            "/user/1",
+            headers=self.auth,
+            json={
+                "id": 1,
+                "username": "test",
+                "nickname": "testname",
+                "numbers": 8098,
+            }
+        )
+        assert response.status_code == 200
+        assert response.json()['username'] != 'new username'
+        assert response.json()['nickname'] != 'new nickname'
+        assert response.json()['numbers'] != 8098
+
+        response = self.client.patch(
+            "/user/1",
+            headers=self.auth,
+            json={
+                "username": "new username",
+                "nickname": "new nickname",
+            }
+        )
+        assert response.status_code == 200
+        assert response.json()['username'] == 'new username'
+        assert response.json()['nickname'] == 'new nickname'
+        assert response.json()['numbers'] == 8098
