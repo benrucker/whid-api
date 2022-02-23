@@ -46,6 +46,46 @@ class TestMainWithAuth:
         assert response.json()['timestamp'] == "2020-01-01T00:00:00"
         assert response.json()['content'] == 'hello'
         assert response.json()['author'] == 1
+        assert response.json()['channel'] == 1
+        assert response.json()['edited'] == False
+        assert response.json()['edited_timestamp'] == None
+        assert response.json()['deleted'] == False
+        assert response.json()['pinned'] == False
+
+    def test_update_message(self, client):
+        response = self.client.put(
+            "/message/1",
+            headers=self.auth,
+            json={
+                "id": 1,
+                "timestamp": "2020-01-01T00:00:00",
+                "content": "hello",
+                "author": 1,
+                "channel": 1,
+            },
+        )
+        assert response.status_code == 200
+
+        response = self.client.patch(
+            "/message/1",
+            headers=self.auth,
+            json={
+                "content": "new content",
+                "edited": True,
+                "edited_timestamp": "2020-01-01T00:00:00",
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()['content'] == 'new content'
+        assert response.json()['edited'] == True
+        assert response.json()['edited_timestamp'] == '2020-01-01T00:00:00'
+
+        response = self.client.put(
+            "/pin/1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert response.json()['pinned'] == True
 
     def test_user(self, client):
         response = self.client.get(
