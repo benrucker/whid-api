@@ -33,4 +33,6 @@ jobs:
         with:
           coverageCommand: pytest --cov=api
           debug: true
+          coverageLocations: |
+            ${{github.workspace}}/.coverage:coverage.py
 
