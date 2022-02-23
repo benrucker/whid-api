@@ -5,9 +5,21 @@ from ..main import app, get_db, token
 from .setup import client, session
 
 
+class TestMisc:
+    client = TestClient(app)
+    auth = {"Authorization": "Bearer hello"}
+
+    def test_main(self):
+        response = self.client.get(
+            "/",
+            headers=self.auth
+        )
+        assert response.status_code == 200
+        assert response.json() == {"Hello": "World"}
+
 class TestMessages:
     client = TestClient(app)
-    auth = {"Authorization": f"Bearer hello"}
+    auth = {"Authorization": "Bearer hello"}
 
     def test_message(self, client):
         response = self.client.get(
@@ -143,6 +155,32 @@ class TestMessages:
         )
         assert response.status_code == 200
         assert response.json()['deleted'] == True
+
+    def test_delete_message(self, client):
+        response = self.client.put(
+            "/message/1",
+            headers=self.auth,
+            json={
+                "id": 1,
+                "timestamp": "2020-01-01T00:00:00",
+                "content": "hello",
+                "author": 1,
+                "channel": 1,
+            },
+        )
+        assert response.status_code == 200
+
+        response = self.client.delete(
+            "/message/1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+
+        response = self.client.get(
+            "/message/1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
 
     def test_user(self, client):
         response = self.client.get(

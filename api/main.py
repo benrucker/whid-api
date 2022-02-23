@@ -75,7 +75,8 @@ def update_message(msg_id: int, message: schemas.MessageUpdate, db: Session = De
 
 @app.delete("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
 def delete_message(msg_id: int, db: Session = Depends(get_db)):
-    return {"msg_id": msg_id}
+    msg = crud.delete_message(db, msg_id)
+    return msg
 
 
 @app.put("/pin/{msg_id}", response_model=schemas.Message, tags=["Messages"])
