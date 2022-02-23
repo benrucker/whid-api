@@ -4,3 +4,4 @@ gunicorn
 sqlalchemy
 pytest
 requests
+pytest-cov
