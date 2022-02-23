@@ -3,8 +3,11 @@ from fastapi import Depends, status, HTTPException
 from .database import SessionLocal
 
 auth_scheme = HTTPBearer()
-with open('.usertokens') as f:
-    usertokens = [x.strip() for x in f.readlines()]
+try:
+    with open('.usertokens') as f:
+        usertokens = [x.strip() for x in f.readlines()]
+except FileNotFoundError:
+    usertokens = []
 
 
 def token(creds: HTTPAuthorizationCredentials = Depends(auth_scheme)):

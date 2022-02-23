@@ -1,9 +1,11 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import Depends
 
 from ..database import Base
-from ..main import app, get_db
+from ..main import app, get_db, token
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(
@@ -24,7 +26,12 @@ def override_get_db():
         db.close()
 
 
+def override_token(creds: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+    return creds.credentials == "hello"
+
+
 app.dependency_overrides[get_db] = override_get_db
+app.dependency_overrides[token] = override_token
 
 
 class TestMainWithAuth:
