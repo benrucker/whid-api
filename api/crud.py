@@ -20,7 +20,7 @@ def add_message(db: Session, message: schemas.MessageCreate):
     return db_message
 
 
-def update_message(db: Session, message_id: int, message: schemas.MessageUpdate):
+def update_message(db: Session, message_id: int, message: dict):
     db_message = get_message(db, message_id)
     if db_message is None:
         raise KeyError()
@@ -57,7 +57,7 @@ def add_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 
-def update_user(db: Session, user_id: int, user: schemas.User):
+def update_user(db: Session, user_id: int, user: dict):
     db_user = get_user(db, user_id)
     if db_user is None:
         raise KeyError()
@@ -130,11 +130,11 @@ def get_channel(db: Session, channel_id: int):
     return db_chan
 
 
-def update_channel(db: Session, channel_id: int, channel: schemas.Channel):
+def update_channel(db: Session, channel_id: int, channel: dict):
     db_channel = get_channel(db, channel_id)
     if db_channel is None:
         raise KeyError()
-    for attr, value in channel.dict().items():
+    for attr, value in channel.items():
         setattr(db_channel, attr, value)
     db.commit()
     db.refresh(db_channel)

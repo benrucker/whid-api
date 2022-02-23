@@ -134,7 +134,7 @@ def add_channel(chan_id: int, channel: schemas.ChannelCreate, db: Session = Depe
     return db_channel
 
 
-@app.get("/channel/{chan_id}", response_model=schemas.ChannelBase, tags=['Channels'])
+@app.get("/channel/{chan_id}", response_model=schemas.Channel, tags=['Channels'])
 def get_channel(chan_id: int, db: Session = Depends(get_db)):
     try:
         db_channel = crud.get_channel(db, chan_id)
@@ -145,8 +145,9 @@ def get_channel(chan_id: int, db: Session = Depends(get_db)):
 
 
 @app.patch("/channel/{chan_id}", tags=['Channels'])
-def update_channel(chan_id: int, channel: schemas.Channel, db: Session = Depends(get_db)):
-    return {"name": channel.name}
+def update_channel(chan_id: int, channel: schemas.ChannelUpdate, db: Session = Depends(get_db)):
+    db_channel = crud.update_channel(db, chan_id, channel.dict(exclude_unset=True))
+    return db_channel
 
 
 @app.post("/voice_event", tags=["Misc Events"])

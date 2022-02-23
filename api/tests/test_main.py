@@ -5,17 +5,9 @@ from ..main import app, get_db, token
 from .setup import client, session
 
 
-class TestMainWithAuth:
+class TestMessages:
     client = TestClient(app)
     auth = {"Authorization": f"Bearer hello"}
-
-    def test_read_main(self, client):
-        response = self.client.get(
-            "/",
-            headers=self.auth,
-        )
-        assert response.status_code == 200
-        assert response.json() == {"Hello": "World"}
 
     def test_message(self, client):
         response = self.client.get(
@@ -52,6 +44,61 @@ class TestMainWithAuth:
         assert response.json()['deleted'] == False
         assert response.json()['pinned'] == False
 
+    def test_message_with_attachments(self, client):
+        response = self.client.get(
+            "/message/1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
+        response = self.client.put(
+            "/message/1",
+            headers=self.auth,
+            json={
+                "id": 1,
+                "timestamp": "2020-01-01T00:00:00",
+                "content": "hello",
+                "author": 1,
+                "channel": 1,
+                "attachments": [
+                    {
+                        "msg_id": 1,
+                        "url": "https://example.com/image.png",
+                    },
+                    {
+                        "msg_id": 1,
+                        "url": "https://example.com/image2.png",
+                    },
+                ],
+            },
+        )
+        assert response.status_code == 200
+
+        response = self.client.get(
+            "/message/1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert response.json()['id'] == 1
+        assert response.json()['timestamp'] == "2020-01-01T00:00:00"
+        assert response.json()['content'] == 'hello'
+        assert response.json()['author'] == 1
+        assert response.json()['channel'] == 1
+        assert response.json()['edited'] == False
+        assert response.json()['edited_timestamp'] == None
+        assert response.json()['deleted'] == False
+        assert response.json()['pinned'] == False
+        assert response.json()['attachments'] == [
+            {
+                "msg_id": 1,
+                "url": "https://example.com/image.png",
+            },
+            {
+                "msg_id": 1,
+                "url": "https://example.com/image2.png",
+            },
+        ]
+
     def test_update_message(self, client):
         response = self.client.put(
             "/message/1",
@@ -86,6 +133,16 @@ class TestMainWithAuth:
         )
         assert response.status_code == 200
         assert response.json()['pinned'] == True
+        
+        response = self.client.patch(
+            "/message/1",
+            headers=self.auth,
+            json={
+                "deleted": True,
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()['deleted'] == True
 
     def test_user(self, client):
         response = self.client.get(
@@ -116,6 +173,11 @@ class TestMainWithAuth:
         assert response.json()['nickname'] == 'testname'
         assert response.json()['numbers'] == 8098
 
+
+class TestChannels:
+    client = TestClient(app)
+    auth = {"Authorization": f"Bearer hello"}
+
     def test_channel(self, client):
         response = self.client.get(
             "/channel/1",
@@ -144,3 +206,31 @@ class TestMainWithAuth:
         assert response.json()['name'] == 'channel'
         assert response.json()['category'] == 'general'
         assert response.json()['thread'] == False
+
+    def test_channel_update(self, client):
+        response = self.client.put(
+            "/channel/1",
+            headers=self.auth,
+            json={
+                "id": 1,
+                "name": "channel",
+                "category": "general",
+                "thread": False,
+            }
+        )
+        assert response.status_code == 200
+        assert response.json()['name'] != 'new channel'
+        assert response.json()['category'] != 'general2'
+
+        response = self.client.patch(
+            "/channel/1",
+            headers=self.auth,
+            json={
+                "name": "new channel",
+                "category": "general2",
+            }
+        )
+        assert response.status_code == 200
+        assert response.json()['name'] == 'new channel'
+        assert response.json()['category'] == 'general2'
+

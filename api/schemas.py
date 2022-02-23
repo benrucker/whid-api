@@ -83,6 +83,14 @@ class Channel(ChannelBase):
     messages: list[Message]
 
 
+class ChannelUpdate(BaseModel):
+    name: str | None
+    category: str | None
+
+    class Config:
+        orm_mode = True
+
+
 class VoiceEventBase(BaseModel):
     user_id: int
     type: str
