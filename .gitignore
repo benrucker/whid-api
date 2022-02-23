@@ -3,4 +3,5 @@ __pycache__
 .usertokens
 *.db
 .coverage
+coverage.xml
 .pytest_cache

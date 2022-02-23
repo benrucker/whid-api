@@ -31,8 +31,8 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
-          coverageCommand: pytest --cov=api
+          coverageCommand: pytest --cov=api --cov-report=xml
           debug: true
-          coverageLocations: |
-            ${{github.workspace}}/.coverage:coverage.py
+          # coverageLocations: |
+          #   ${{github.workspace}}/.coverage:coverage.py
 
