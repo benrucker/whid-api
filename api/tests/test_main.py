@@ -288,9 +288,11 @@ class TestUsers():
             }
         )
         assert response.status_code == 200
+        assert response.json()['username'] == 'test'
+        assert response.json()['nickname'] == 'testname'
         assert response.json()['username'] != 'new username'
         assert response.json()['nickname'] != 'new nickname'
-        assert response.json()['numbers'] != 8098
+        assert response.json()['numbers'] == 8098
 
         response = self.client.patch(
             "/user/1",
