@@ -306,3 +306,52 @@ class TestUsers():
         assert response.json()['username'] == 'new username'
         assert response.json()['nickname'] == 'new nickname'
         assert response.json()['numbers'] == 8098
+
+
+class TestEvents:
+    client = TestClient(app)
+    auth = {"Authorization": "Bearer hello"}
+
+    def test_voice_event(self, client):
+        response = self.client.get(
+            "/voice_event?since=2020-01-01T00:00:00&user=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
+        response = self.client.post(
+            "/voice_event",
+            headers=self.auth,
+            json={
+                "user_id": 1,
+                "type": "join",
+                "channel": 1,
+                "timestamp": "2020-01-01T00:00:00",
+            }
+        )
+        assert response.status_code == 200
+
+        response = self.client.get(
+            "/voice_event?since=2020-01-01T00:00:00&user=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json()[0]['user_id'] == 1
+        assert response.json()[0]['type'] == 'join'
+        assert response.json()[0]['channel'] == 1
+        assert response.json()[0]['timestamp'] == '2020-01-01T00:00:00'
+
+        # fail when all events are in past
+        response = self.client.get(
+            "/voice_event?since=2020-01-02T00:00:00&user=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
+        # fail when no events for user
+        response = self.client.get(
+            "/voice_event?since=2020-01-01T00:00:00&user=2",
+            headers=self.auth,
+        )
+        assert response.status_code == 404

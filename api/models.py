@@ -52,7 +52,9 @@ class VoiceEvent(Base):
     __tablename__ = "voice_event"
 
     id = Column(Integer, primary_key=True, index=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     type = Column(String, nullable=False)
+    channel = Column(Integer, ForeignKey("channel.id"), nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
 

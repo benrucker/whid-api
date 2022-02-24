@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from fastapi import Depends, FastAPI, status, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -151,6 +151,19 @@ def update_channel(chan_id: int, channel: schemas.ChannelUpdate, db: Session = D
     return db_channel
 
 
-@app.post("/voice_event", tags=["Misc Events"])
+@app.get("/voice_event", response_model=list[schemas.VoiceEvent], tags=['Misc Events'])
+def get_voice_events(since: datetime, user: int, db: Session = Depends(get_db)):
+    try:
+        events = crud.get_voice_events(db, user, since)
+        return events
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Events not found")
+
+
+@app.post("/voice_event", response_model=schemas.VoiceEvent, tags=["Misc Events"])
 def add_voice_event(event: schemas.VoiceEvent, db: Session = Depends(get_db)):
-    return {"user": event.user_id, "action": event.type, "time": event.timestamp}
+    db_event = crud.add_voice_event(db, event)
+    return db_event
+
+

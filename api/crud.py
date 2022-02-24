@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy.orm import Session
 
 from . import models, schemas
@@ -148,6 +149,16 @@ def delete_channel(db: Session, channel_id: int):
     db.delete(db_channel)
     db.commit()
     return db_channel
+
+
+def get_voice_events(db: Session, user_id: int, since: datetime):
+    events = db.query(models.VoiceEvent) \
+        .filter(models.VoiceEvent.user_id == user_id) \
+        .filter(models.VoiceEvent.timestamp >= since) \
+        .all()
+    if not events:
+        raise KeyError()
+    return events
 
 
 def add_voice_event(db: Session, voice_event: schemas.VoiceEvent):

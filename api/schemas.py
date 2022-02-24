@@ -94,6 +94,7 @@ class ChannelUpdate(BaseModel):
 class VoiceEventBase(BaseModel):
     user_id: int
     type: str
+    channel: int
     timestamp: datetime
     
     class Config:
