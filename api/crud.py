@@ -64,24 +64,55 @@ def update_user(db: Session, user_id: int, user: dict):
     return db_user
 
 
-def get_scores(db: Session, iteration: int | str):
-    if iteration == "latest":
-        iteration = get_latest_iteration(db)
+def get_scores(db: Session, epoch: int | str):
+    epoch = semantic_epoch_to_int(db, epoch)
     scores = db.query(models.Score) \
-               .filter(models.Score.iteration == iteration) \
+               .filter(models.Score.epoch == epoch) \
                .all()
     if not scores:
         raise KeyError()
     return scores
 
 
-def get_latest_iteration(db: Session):
+def get_score(db: Session, user_id: int, epoch: int | str):
+    epoch = semantic_epoch_to_int(db, epoch)
+    scores = db.query(models.Score) \
+               .filter(models.Score.epoch == epoch) \
+               .all()
+    if not scores:
+        raise KeyError()
+    return scores
+
+
+def semantic_epoch_to_int(db: Session, epoch: int | str):
+    if isinstance(epoch, int):
+        return epoch
+    if epoch == 'current':
+        return get_current_epoch(db)
+    elif epoch == 'previous':
+        return get_previous_epoch(db)
+    raise ValueError()
+
+
+def get_current_epoch(db: Session):
     score = db.query(models.Score) \
-              .order_by(models.Score.iteration.desc()) \
+              .order_by(models.Score.epoch.desc()) \
               .first()
     if score is None:
         raise KeyError()
-    return score.iteration
+    return score.epoch
+
+
+def get_previous_epoch(db: Session):
+    curr = get_current_epoch(db)
+    previous_exists = bool(
+        db.query(models.Score)
+        .filter(models.Score.epoch == curr - 1)
+        .first()
+    )
+    if not previous_exists:
+        raise KeyError()
+    return curr - 1
 
 
 def add_scores(db: Session, scores: list[schemas.Score]):

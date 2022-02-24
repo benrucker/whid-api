@@ -168,6 +168,43 @@ class TestMessages:
         assert response.status_code == 200
         assert response.json()['deleted'] == True
 
+    def test_malformed_attachment_fails_to_create(self, client):
+        response = self.client.put(
+            "/message/1",
+            headers=self.auth,
+            json={
+                "id": 1,
+                "timestamp": "2020-01-01T00:00:00",
+                "content": "hello",
+                "author": 1,
+                "channel": 1,
+                "attachments": [
+                    {
+                        "msg_id": 1,
+                    }
+                ],
+            },
+        )
+        assert response.status_code == 422
+        
+        response = self.client.put(
+            "/message/1",
+            headers=self.auth,
+            json={
+                "id": 1,
+                "timestamp": "2020-01-01T00:00:00",
+                "content": "hello",
+                "author": 1,
+                "channel": 1,
+                "attachments": [
+                    {
+                        "the_number_one": 1,
+                    }
+                ],
+            },
+        )
+        assert response.status_code == 422
+
     def test_pin_nonexistant_message(self, client):
         response = self.client.put(
             "/pin/1",
@@ -410,7 +447,7 @@ class TestScores:
 
     def test_score(self, client):
         response = self.client.get(
-            "/scores?iteration=latest",
+            "/scores?epoch=current",
             headers=self.auth,
         )
         assert response.status_code == 404
@@ -420,17 +457,17 @@ class TestScores:
             headers=self.auth,
             json=[
                 {
-                    "iteration": "1",
+                    "epoch": "1",
                     "user_id": 1,
                     "score": 2,
                 },
                 {
-                    "iteration": "1",
+                    "epoch": "1",
                     "user_id": 2,
                     "score": 4,
                 },
                 {
-                    "iteration": "1",
+                    "epoch": "1",
                     "user_id": 3,
                     "score": 8,
                 }
@@ -440,16 +477,64 @@ class TestScores:
         assert response.json() == "success! 3 scores have been processed"
 
         response = self.client.get(
-            "/scores?iteration=1",
+            "/scores?epoch=1",
             headers=self.auth,
         )
         assert response.status_code == 200
         assert len(response.json()) == 3
 
         response = self.client.get(
-            "/scores?iteration=latest",
+            "/scores?epoch=current",
             headers=self.auth,
         )
         assert response.status_code == 200
         assert len(response.json()) == 3
-        
+
+
+class TestReactions():
+    client = TestClient(app)
+    auth = {"Authorization": "Bearer hello"}
+
+    # def test_reaction(self, client):
+    #     response = self.client.get(
+    #         "/reaction?since=2020-01-01T00:00:00",
+    #         headers=self.auth,
+    #     )
+    #     assert response.status_code == 404
+
+        # response = self.client.post(
+        #     "/reaction",
+        #     headers=self.auth,
+        #     json={
+        #         "user_id": 1,
+        #         "type": "like",
+        #         "channel": 1,
+        #         "timestamp": "2020-01-01T00:00:00",
+        #     }
+        # )
+        # assert response.status_code == 200
+
+        # response = self.client.get(
+        #     "/reaction?since=2020-01-01T00:00:00&user=1",
+        #     headers=self.auth,
+        # )
+        # assert response.status_code == 200
+        # assert len(response.json()) == 1
+        # assert response.json()[0]['user_id'] == 1
+        # assert response.json()[0]['type'] == 'like'
+        # assert response.json()[0]['channel'] == 1
+        # assert response.json()[0]['timestamp'] == '2020-01-01T00:00:00'
+
+        # # fail when all events are in past
+        # response = self.client.get(
+        #     "/reaction?since=2020-01-02T00:00:00&user=1",
+        #     headers=self.auth,
+        # )
+        # assert response.status_code == 404
+
+        # # fail when no events for user
+        # response = self.client.get(
+        #     "/reaction?since=2020-01-01T00:00:00&user=2",
+        #     headers=self.auth,
+        # )
+        # assert response.status_code == 404

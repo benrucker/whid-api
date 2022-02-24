@@ -124,13 +124,23 @@ def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(ge
 
 
 @app.get("/scores", response_model=list[schemas.Score], tags=["Scores"])
-def get_scores(iteration: int | str = "latest", db: Session = Depends(get_db)):
+def get_scores(epoch: int | str = "current", db: Session = Depends(get_db)):
     try:
-        score = crud.get_scores(db, iteration)
+        score = crud.get_scores(db, epoch)
         return score
     except KeyError:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="No scores found for given iteration")
+            status_code=status.HTTP_404_NOT_FOUND, detail="No scores found for given epoch")
+
+
+@app.get("/scores/{user_id}", response_model=schemas.Score, tags=["Scores"])
+def get_score(user_id: int, epoch: int | str = "current", db: Session = Depends(get_db)):
+    try:
+        score = crud.get_score(db, user_id, epoch)
+        return score
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No score found for given user and epoch")
 
 
 @app.post("/scores", tags=["Scores"])
@@ -139,9 +149,15 @@ def add_scores(scores: list[schemas.ScoreCreate], db: Session = Depends(get_db))
     return f"success! {len(scores)} scores have been processed"
 
 
-@app.post("/reaction", tags=['Reactions'])
+@app.post("/reaction", response_model=schemas.Reaction, tags=['Reactions'])
 def add_reaction(reaction: schemas.Reaction, db: Session = Depends(get_db)):
-    return {"msg_id": reaction.msg_id, "user_id": reaction.msg_id, "reaction": reaction.emoji}
+    db_reaction = crud.add_reaction(db, reaction)
+    return db_reaction
+
+
+@app.get("/reaction", response_model=list[schemas.Reaction], tags=['Reactions'])
+def get_reactions(user: int, epoch: int | str = "current", db: Session = Depends(get_db)):
+    return crud.get_reactions_from_user(db, user, epoch)
 
 
 @app.delete('/reaction', tags=['Reactions'])

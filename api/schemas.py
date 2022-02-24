@@ -110,7 +110,7 @@ class VoiceEvent(VoiceEventBase):
 
 
 class ScoreBase(BaseModel):
-    iteration: int
+    epoch: int
     user_id: int
     score: int
 

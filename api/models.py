@@ -1,3 +1,4 @@
+from sqlite3 import Timestamp
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Date
 from sqlalchemy.orm import relationship
 
@@ -35,7 +36,7 @@ class Reaction(Base):
     message = Column(Integer, ForeignKey("message.id"), primary_key=True, nullable=False)
     user = Column(Integer, ForeignKey("user.id"), primary_key=True, nullable=False)
     emoji = Column(String, primary_key=True, nullable=False)
-
+    Timestamp = Column(DateTime)
 
 class Channel(Base):
     __tablename__ = "channel"
@@ -74,7 +75,7 @@ class User(Base):
 class Score(Base):
     __tablename__ = "score"
 
-    iteration = Column(Integer, primary_key=True, index=True, nullable=False)
+    epoch = Column(Integer, primary_key=True, index=True, nullable=False)
     user_id = Column(Integer, ForeignKey("user.id"), primary_key=True, nullable=False)
     date_processed = Column(Date, nullable=False)
     score = Column(Integer, nullable=False)
