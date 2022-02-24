@@ -298,7 +298,17 @@ class TestUsers():
         assert response.json()['nickname'] == 'testname'
         assert response.json()['numbers'] == 8098
 
-    def test_user_update(self, client):
+    def test_update_nonexistant_user(self, client):
+        response = self.client.patch(
+            "/user/1",
+            headers=self.auth,
+            json={
+                "username": "new name",
+            },
+        )
+        assert response.status_code == 404
+
+    def test_update_user(self, client):
         response = self.client.put(
             "/user/1",
             headers=self.auth,
