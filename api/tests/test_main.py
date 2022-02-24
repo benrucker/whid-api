@@ -111,6 +111,18 @@ class TestMessages:
             },
         ]
 
+    def test_update_nonexistant_message(self, client):
+        response = self.client.patch(
+            "/message/1",
+            headers=self.auth,
+            json={
+                "content": "new content",
+                "edited": True,
+                "edited_timestamp": "2020-01-01T00:00:00",
+            },
+        )
+        assert response.status_code == 404
+
     def test_update_message(self, client):
         response = self.client.put(
             "/message/1",

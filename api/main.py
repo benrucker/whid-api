@@ -69,20 +69,32 @@ def add_message(msg_id: int, message: schemas.MessageCreate, db: Session = Depen
 
 @app.patch("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
 def update_message(msg_id: int, message: schemas.MessageUpdate, db: Session = Depends(get_db)):
-    msg = crud.update_message(db, msg_id, message.dict(exclude_unset=True))
-    return msg
+    try:
+        msg = crud.update_message(db, msg_id, message.dict(exclude_unset=True))
+        return msg
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
 
 @app.delete("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
 def delete_message(msg_id: int, db: Session = Depends(get_db)):
-    msg = crud.delete_message(db, msg_id)
-    return msg
+    try:
+        msg = crud.delete_message(db, msg_id)
+        return msg
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
 
 @app.put("/pin/{msg_id}", response_model=schemas.Message, tags=["Messages"])
 def pin_message(msg_id, db: Session = Depends(get_db)):
-    msg = crud.update_message(db, msg_id, {"pinned": True})
-    return msg
+    try:
+        msg = crud.update_message(db, msg_id, {"pinned": True})
+        return msg
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
 
 @app.get("/user/{user_id}", response_model=schemas.UserBase, tags=["Users"])
