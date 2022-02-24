@@ -612,6 +612,70 @@ class TestScores:
         assert response.json()['user_id'] == 1
         assert response.json()['score'] == 2
 
+    def test_get_all_scores_for_epoch(self, client):
+        response = self.client.post(
+            "/scores",
+            headers=self.auth,
+            json=[
+                {
+                    "epoch": 1,
+                    "user_id": 1,
+                    "score": 2,
+                },
+                {
+                    "epoch": 1,
+                    "user_id": 2,
+                    "score": 4,
+                },
+                {
+                    "epoch": 1,
+                    "user_id": 3,
+                    "score": 8,
+                },
+                {
+                    "epoch": 2,
+                    "user_id": 1,
+                    "score": 4,
+                },
+                {
+                    "epoch": 3,
+                    "user_id": 1,
+                    "score": 8,
+                }
+            ]
+        )
+        assert response.status_code == 200
+
+        response = self.client.get(
+            "/scores?epoch=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 3
+
+        response = self.client.get(
+            "/scores?epoch=2",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json() == self.client.get(
+            "/scores?epoch=previous",
+            headers=self.auth,
+        ).json()
+
+        response = self.client.get(
+            "/scores?epoch=3",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json() == self.client.get(
+            "/scores?epoch=current",
+            headers=self.auth,
+        ).json()
+
+
 
 class TestReactions():
     client = TestClient(app)
