@@ -227,7 +227,17 @@ class TestChannels:
         assert response.json()['category'] == 'general'
         assert response.json()['thread'] == False
 
-    def test_channel_update(self, client):
+    def test_update_nonexistant_channel(self, client):
+        response = self.client.patch(
+            "/channel/1",
+            headers=self.auth,
+            json={
+                "name": "new name",
+            },
+        )
+        assert response.status_code == 404
+
+    def test_update_channel(self, client):
         response = self.client.put(
             "/channel/1",
             headers=self.auth,

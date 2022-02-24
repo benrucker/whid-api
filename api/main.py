@@ -115,8 +115,12 @@ def add_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_d
 
 @app.patch("/user/{user_id}", response_model=schemas.User, tags=["Users"])
 def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(get_db)):
-    db_user = crud.update_user(db, user_id, data.dict(exclude_unset=True))
-    return db_user
+    try:
+        db_user = crud.update_user(db, user_id, data.dict(exclude_unset=True))
+        return db_user
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
 
 @app.get("/score", response_model=schemas.Score, tags=["Scores"])
@@ -159,8 +163,12 @@ def get_channel(chan_id: int, db: Session = Depends(get_db)):
 
 @app.patch("/channel/{chan_id}", tags=['Channels'])
 def update_channel(chan_id: int, channel: schemas.ChannelUpdate, db: Session = Depends(get_db)):
-    db_channel = crud.update_channel(db, chan_id, channel.dict(exclude_unset=True))
-    return db_channel
+    try:
+        db_channel = crud.update_channel(db, chan_id, channel.dict(exclude_unset=True))
+        return db_channel
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Channel not found")
 
 
 @app.get("/voice_event", response_model=list[schemas.VoiceEvent], tags=['Misc Events'])
