@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 from .dependencies import get_db, token
+from .enums import Epoch
 
 tags = [
     {
@@ -124,7 +125,7 @@ def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(ge
 
 
 @app.get("/scores", response_model=list[schemas.Score], tags=["Scores"])
-def get_scores(epoch: int | str = "current", db: Session = Depends(get_db)):
+def get_scores(epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
         score = crud.get_scores(db, epoch)
         return score
@@ -134,7 +135,7 @@ def get_scores(epoch: int | str = "current", db: Session = Depends(get_db)):
 
 
 @app.get("/scores/{user_id}", response_model=schemas.Score, tags=["Scores"])
-def get_score(user_id: int, epoch: int | str = "current", db: Session = Depends(get_db)):
+def get_score(user_id: int, epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
         score = crud.get_score(db, user_id, epoch)
         return score
@@ -156,7 +157,7 @@ def add_reaction(reaction: schemas.Reaction, db: Session = Depends(get_db)):
 
 
 @app.get("/reaction", response_model=list[schemas.Reaction], tags=['Reactions'])
-def get_reactions(user: int, epoch: int | str = "current", db: Session = Depends(get_db)):
+def get_reactions(user: int, epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     return crud.get_reactions_from_user(db, user, epoch)
 
 

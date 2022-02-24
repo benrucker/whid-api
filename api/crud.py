@@ -2,7 +2,7 @@ from datetime import date, datetime
 from sqlalchemy.orm import Session
 
 from . import models, schemas
-
+from .enums import Epoch
 
 def get_message(db: Session, message_id: int):
     db_msg = db.query(models.Message).filter(
@@ -64,7 +64,7 @@ def update_user(db: Session, user_id: int, user: dict):
     return db_user
 
 
-def get_scores(db: Session, epoch: int | str):
+def get_scores(db: Session, epoch: Epoch | int):
     epoch = semantic_epoch_to_int(db, epoch)
     scores = db.query(models.Score) \
                .filter(models.Score.epoch == epoch) \
@@ -74,7 +74,7 @@ def get_scores(db: Session, epoch: int | str):
     return scores
 
 
-def get_score(db: Session, user_id: int, epoch: int | str):
+def get_score(db: Session, user_id: int, epoch: Epoch | int):
     epoch = semantic_epoch_to_int(db, epoch)
     scores = db.query(models.Score) \
                .filter(models.Score.epoch == epoch) \
@@ -84,12 +84,12 @@ def get_score(db: Session, user_id: int, epoch: int | str):
     return scores
 
 
-def semantic_epoch_to_int(db: Session, epoch: int | str):
+def semantic_epoch_to_int(db: Session, epoch: Epoch | int):
     if isinstance(epoch, int):
         return epoch
-    if epoch == 'current':
+    if epoch is Epoch.CURR:
         return get_current_epoch(db)
-    elif epoch == 'previous':
+    elif epoch is Epoch.PREV:
         return get_previous_epoch(db)
     raise ValueError()
 
