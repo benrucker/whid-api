@@ -74,17 +74,6 @@ def get_scores(db: Session, epoch: Epoch | int):
     return scores
 
 
-def get_score(db: Session, user_id: int, epoch: Epoch | int):
-    epoch = semantic_epoch_to_int(db, epoch)
-    score = db.query(models.Score) \
-               .filter(models.Score.epoch == epoch) \
-               .filter(models.Score.user_id == user_id) \
-               .first()
-    if not score:
-        raise KeyError()
-    return score
-
-
 def semantic_epoch_to_int(db: Session, epoch: Epoch | int):
     if isinstance(epoch, int):
         return epoch
@@ -93,6 +82,7 @@ def semantic_epoch_to_int(db: Session, epoch: Epoch | int):
     elif epoch is Epoch.PREV:
         return get_previous_epoch(db)
     raise ValueError()
+
 
 
 def get_current_epoch(db: Session):
@@ -108,6 +98,50 @@ def get_previous_epoch(db: Session):
     curr = get_current_epoch(db)
     previous_exists = bool(
         db.query(models.Score)
+        .filter(models.Score.epoch == curr - 1)
+        .first()
+    )
+    if not previous_exists:
+        raise KeyError()
+    return curr - 1
+
+
+def get_score(db: Session, user_id: int, epoch: Epoch | int):
+    epoch = semantic_user_epoch_to_int(db, epoch, user_id)
+    score = db.query(models.Score) \
+               .filter(models.Score.epoch == epoch) \
+               .filter(models.Score.user_id == user_id) \
+               .first()
+    if not score:
+        raise KeyError()
+    return score
+
+
+def semantic_user_epoch_to_int(db: Session, epoch: Epoch | int, user_id: int):
+    if isinstance(epoch, int):
+        return epoch
+    if epoch is Epoch.CURR:
+        return get_current_epoch_for_user(db, user_id)
+    elif epoch is Epoch.PREV:
+        return get_previous_epoch_for_user(db, user_id)
+    raise ValueError()
+
+
+def get_current_epoch_for_user(db: Session, user_id: int):
+    score = db.query(models.Score) \
+              .filter(models.Score.user_id == user_id) \
+              .order_by(models.Score.epoch.desc()) \
+              .first()
+    if score is None:
+        raise KeyError()
+    return score.epoch
+
+
+def get_previous_epoch_for_user(db: Session, user_id: int):
+    curr = get_current_epoch_for_user(db, user_id)
+    previous_exists = bool(
+        db.query(models.Score)
+        .filter(models.Score.user_id == user_id)
         .filter(models.Score.epoch == curr - 1)
         .first()
     )
