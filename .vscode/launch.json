@@ -5,12 +5,22 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Test",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "--cov=api"
+            ],
+        },
+        {
             "name": "Python: FastAPI",
             "type": "python",
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "api.main:app", "--reload"
+                "api.main:app",
+                "--reload"
             ],
             "jinja": true
         }
