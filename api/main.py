@@ -134,7 +134,7 @@ def get_scores(epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="No scores found for given epoch")
 
 
-@app.get("/scores/{user_id}", response_model=schemas.Score, tags=["Scores"])
+@app.get("/score", response_model=schemas.Score, tags=["Scores"])
 def get_score(user_id: int, epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
         score = crud.get_score(db, user_id, epoch)

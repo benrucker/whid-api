@@ -1,3 +1,4 @@
+from datetime import date
 from fastapi.testclient import TestClient
 
 from ..database import Base
@@ -16,6 +17,7 @@ class TestMisc:
         )
         assert response.status_code == 200
         assert response.json() == {"Hello": "World"}
+
 
 class TestMessages:
     client = TestClient(app)
@@ -157,7 +159,7 @@ class TestMessages:
         )
         assert response.status_code == 200
         assert response.json()['pinned'] == True
-        
+
         response = self.client.patch(
             "/message/1",
             headers=self.auth,
@@ -186,7 +188,7 @@ class TestMessages:
             },
         )
         assert response.status_code == 422
-        
+
         response = self.client.put(
             "/message/1",
             headers=self.auth,
@@ -244,6 +246,7 @@ class TestMessages:
             headers=self.auth,
         )
         assert response.status_code == 404
+
 
 class TestChannels:
     client = TestClient(app)
@@ -319,7 +322,6 @@ class TestChannels:
 class TestUsers():
     client = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
-
 
     def test_user(self, client):
         response = self.client.get(
@@ -445,7 +447,7 @@ class TestScores:
     client = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
-    def test_score(self, client):
+    def test_get_scores_for_epoch(self, client):
         response = self.client.get(
             "/scores?epoch=current",
             headers=self.auth,
@@ -490,6 +492,126 @@ class TestScores:
         assert response.status_code == 200
         assert len(response.json()) == 3
 
+    def test_get_scores_for_user_at_epoch(self, client):
+        response = self.client.get(
+            "/score?epoch=1&user_id=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
+        response = self.client.post(
+            "/scores",
+            headers=self.auth,
+            json=[
+{
+                    "epoch": 1,
+                    "user_id": 1,
+                    "score": 2,
+                },
+                {
+                    "epoch": 1,
+                    "user_id": 2,
+                    "score": 4,
+                },
+                {
+                    "epoch": 1,
+                    "user_id": 3,
+                    "score": 8,
+                },
+                {
+                    "epoch": 2,
+                    "user_id": 1,
+                    "score": 4,
+                },
+                {
+                    "epoch": 3,
+                    "user_id": 1,
+                    "score": 8,
+                },
+            ]
+        )
+        assert response.status_code == 200
+
+        response = self.client.get(
+            "/score?epoch=1&user_id=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert response.json()['user_id'] == 1
+        assert response.json()['score'] == 2
+
+    def test_epoch_semantics(self, client):
+        response = self.client.get(
+            "/score?epoch=current&user_id=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
+        response = self.client.post(
+            "/scores",
+            headers=self.auth,
+            json=[
+                {
+                    "epoch": 1,
+                    "user_id": 1,
+                    "score": 2,
+                },
+                {
+                    "epoch": 1,
+                    "user_id": 2,
+                    "score": 4,
+                },
+                {
+                    "epoch": 1,
+                    "user_id": 3,
+                    "score": 8,
+                },
+                {
+                    "epoch": 2,
+                    "user_id": 1,
+                    "score": 4,
+                },
+                {
+                    "epoch": 3,
+                    "user_id": 1,
+                    "score": 8,
+                }
+            ]
+        )
+        assert response.status_code == 200
+
+        response = self.client.get(
+            "/score?epoch=current&user_id=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert response.json()['user_id'] == 1
+        assert response.json()['score'] == 8
+        assert response.json() == self.client.get(
+            "/score?epoch=3&user_id=1",
+            headers=self.auth,
+        ).json()
+
+        response = self.client.get(
+            "/score?epoch=previous&user_id=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert response.json()['user_id'] == 1
+        assert response.json()['score'] == 4
+        assert response.json() == self.client.get(
+            "/score?epoch=2&user_id=1",
+            headers=self.auth,
+        ).json()
+
+        response = self.client.get(
+            "/score?epoch=1&user_id=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert response.json()['user_id'] == 1
+        assert response.json()['score'] == 2
+
 
 class TestReactions():
     client = TestClient(app)
@@ -502,39 +624,39 @@ class TestReactions():
     #     )
     #     assert response.status_code == 404
 
-        # response = self.client.post(
-        #     "/reaction",
-        #     headers=self.auth,
-        #     json={
-        #         "user_id": 1,
-        #         "type": "like",
-        #         "channel": 1,
-        #         "timestamp": "2020-01-01T00:00:00",
-        #     }
-        # )
-        # assert response.status_code == 200
+    # response = self.client.post(
+    #     "/reaction",
+    #     headers=self.auth,
+    #     json={
+    #         "user_id": 1,
+    #         "type": "like",
+    #         "channel": 1,
+    #         "timestamp": "2020-01-01T00:00:00",
+    #     }
+    # )
+    # assert response.status_code == 200
 
-        # response = self.client.get(
-        #     "/reaction?since=2020-01-01T00:00:00&user=1",
-        #     headers=self.auth,
-        # )
-        # assert response.status_code == 200
-        # assert len(response.json()) == 1
-        # assert response.json()[0]['user_id'] == 1
-        # assert response.json()[0]['type'] == 'like'
-        # assert response.json()[0]['channel'] == 1
-        # assert response.json()[0]['timestamp'] == '2020-01-01T00:00:00'
+    # response = self.client.get(
+    #     "/reaction?since=2020-01-01T00:00:00&user=1",
+    #     headers=self.auth,
+    # )
+    # assert response.status_code == 200
+    # assert len(response.json()) == 1
+    # assert response.json()[0]['user_id'] == 1
+    # assert response.json()[0]['type'] == 'like'
+    # assert response.json()[0]['channel'] == 1
+    # assert response.json()[0]['timestamp'] == '2020-01-01T00:00:00'
 
-        # # fail when all events are in past
-        # response = self.client.get(
-        #     "/reaction?since=2020-01-02T00:00:00&user=1",
-        #     headers=self.auth,
-        # )
-        # assert response.status_code == 404
+    # # fail when all events are in past
+    # response = self.client.get(
+    #     "/reaction?since=2020-01-02T00:00:00&user=1",
+    #     headers=self.auth,
+    # )
+    # assert response.status_code == 404
 
-        # # fail when no events for user
-        # response = self.client.get(
-        #     "/reaction?since=2020-01-01T00:00:00&user=2",
-        #     headers=self.auth,
-        # )
-        # assert response.status_code == 404
+    # # fail when no events for user
+    # response = self.client.get(
+    #     "/reaction?since=2020-01-01T00:00:00&user=2",
+    #     headers=self.auth,
+    # )
+    # assert response.status_code == 404

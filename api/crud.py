@@ -76,12 +76,13 @@ def get_scores(db: Session, epoch: Epoch | int):
 
 def get_score(db: Session, user_id: int, epoch: Epoch | int):
     epoch = semantic_epoch_to_int(db, epoch)
-    scores = db.query(models.Score) \
+    score = db.query(models.Score) \
                .filter(models.Score.epoch == epoch) \
-               .all()
-    if not scores:
+               .filter(models.Score.user_id == user_id) \
+               .first()
+    if not score:
         raise KeyError()
-    return scores
+    return score
 
 
 def semantic_epoch_to_int(db: Session, epoch: Epoch | int):
