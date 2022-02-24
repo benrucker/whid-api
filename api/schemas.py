@@ -70,7 +70,7 @@ class ChannelBase(BaseModel):
     name: str
     category: str
     thread: bool = False
-    
+
     class Config:
         orm_mode = True
 
@@ -96,7 +96,7 @@ class VoiceEventBase(BaseModel):
     type: str
     channel: int
     timestamp: datetime
-    
+
     class Config:
         orm_mode = True
 
@@ -112,7 +112,6 @@ class VoiceEvent(VoiceEventBase):
 class ScoreBase(BaseModel):
     iteration: int
     user_id: int
-    date_processed: date
     score: int
 
 
@@ -121,6 +120,8 @@ class ScoreCreate(ScoreBase):
 
 
 class Score(ScoreBase):
+    date_processed: date
+
     class Config:
         orm_mode = True
 

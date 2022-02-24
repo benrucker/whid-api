@@ -1,11 +1,12 @@
-from datetime import datetime
+from datetime import date, datetime
 from sqlalchemy.orm import Session
 
 from . import models, schemas
 
 
 def get_message(db: Session, message_id: int):
-    db_msg = db.query(models.Message).filter(models.Message.id == message_id).first()
+    db_msg = db.query(models.Message).filter(
+        models.Message.id == message_id).first()
     if db_msg is None:
         raise KeyError()
     return db_msg
@@ -63,9 +64,36 @@ def update_user(db: Session, user_id: int, user: dict):
     return db_user
 
 
-def get_user_score(db: Session, user_id: int):
-    user = get_user(db, user_id)
-    return user.scores.order_by(models.Score.iteration.desc()).first()
+def get_scores(db: Session, iteration: int | str):
+    if iteration == "latest":
+        iteration = get_latest_iteration(db)
+    scores = db.query(models.Score) \
+               .filter(models.Score.iteration == iteration) \
+               .all()
+    if not scores:
+        raise KeyError()
+    return scores
+
+
+def get_latest_iteration(db: Session):
+    score = db.query(models.Score) \
+              .order_by(models.Score.iteration.desc()) \
+              .first()
+    if score is None:
+        raise KeyError()
+    return score.iteration
+
+
+def add_scores(db: Session, scores: list[schemas.Score]):
+    db.add_all(map(generate_score_model, scores))
+    db.commit()
+
+
+def generate_score_model(score: schemas.Score):
+    return models.Score(
+        **score.dict(),
+        date_processed=date.today(),
+    )
 
 
 def add_score_intermediate(db: Session, score: schemas.Score):
@@ -74,13 +102,6 @@ def add_score_intermediate(db: Session, score: schemas.Score):
     )
     db.add(db_score)
     return db_score
-
-
-def add_scores(db: Session, scores: list[schemas.Score]):
-    db_scores = scores.map(lambda s: add_score_intermediate(db, s))
-    db.commit()
-    db.refresh(db_scores)
-    return db_scores
 
 
 def add_reaction(db: Session, reaction: schemas.Reaction):
@@ -117,7 +138,8 @@ def add_channel(db: Session, channel: schemas.ChannelCreate):
 
 
 def get_channel(db: Session, channel_id: int):
-    db_chan = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
+    db_chan = db.query(models.Channel).filter(
+        models.Channel.id == channel_id).first()
     if db_chan is None:
         raise KeyError()
     return db_chan
@@ -161,6 +183,3 @@ def add_voice_event(db: Session, voice_event: schemas.VoiceEvent):
     db.commit()
     db.refresh(db_voice_event)
     return db_voice_event
-
-
-

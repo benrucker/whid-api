@@ -123,16 +123,20 @@ def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(ge
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
 
-@app.get("/score", response_model=schemas.Score, tags=["Scores"])
-def get_user_score(user_id: int, db: Session = Depends(get_db)):
-    score = crud.get_user_score(db, user_id)
-    return score
+@app.get("/scores", response_model=list[schemas.Score], tags=["Scores"])
+def get_scores(iteration: int | str = "latest", db: Session = Depends(get_db)):
+    try:
+        score = crud.get_scores(db, iteration)
+        return score
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No scores found for given iteration")
 
 
-@app.post("/score", tags=["Scores"])
+@app.post("/scores", tags=["Scores"])
 def add_scores(scores: list[schemas.ScoreCreate], db: Session = Depends(get_db)):
-    db_scores = crud.add_scores(db, scores)
-    return db_scores
+    crud.add_scores(db, scores)
+    return f"success! {len(scores)} scores have been processed"
 
 
 @app.post("/reaction", tags=['Reactions'])

@@ -402,3 +402,54 @@ class TestEvents:
             headers=self.auth,
         )
         assert response.status_code == 404
+
+
+class TestScores:
+    client = TestClient(app)
+    auth = {"Authorization": "Bearer hello"}
+
+    def test_score(self, client):
+        response = self.client.get(
+            "/scores?iteration=latest",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
+        response = self.client.post(
+            "/scores",
+            headers=self.auth,
+            json=[
+                {
+                    "iteration": "1",
+                    "user_id": 1,
+                    "score": 2,
+                },
+                {
+                    "iteration": "1",
+                    "user_id": 2,
+                    "score": 4,
+                },
+                {
+                    "iteration": "1",
+                    "user_id": 3,
+                    "score": 8,
+                }
+            ]
+        )
+        assert response.status_code == 200
+        assert response.json() == "success! 3 scores have been processed"
+
+        response = self.client.get(
+            "/scores?iteration=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 3
+
+        response = self.client.get(
+            "/scores?iteration=latest",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 3
+        
