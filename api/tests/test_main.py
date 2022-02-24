@@ -168,6 +168,20 @@ class TestMessages:
         assert response.status_code == 200
         assert response.json()['deleted'] == True
 
+    def test_pin_nonexistant_message(self, client):
+        response = self.client.put(
+            "/pin/1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
+    def test_delete_nonexistant_message(self, client):
+        response = self.client.delete(
+            "/message/1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
     def test_delete_message(self, client):
         response = self.client.put(
             "/message/1",
@@ -263,6 +277,7 @@ class TestChannels:
         assert response.status_code == 200
         assert response.json()['name'] == 'new channel'
         assert response.json()['category'] == 'general2'
+
 
 class TestUsers():
     client = TestClient(app)

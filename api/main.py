@@ -164,7 +164,9 @@ def get_channel(chan_id: int, db: Session = Depends(get_db)):
 @app.patch("/channel/{chan_id}", tags=['Channels'])
 def update_channel(chan_id: int, channel: schemas.ChannelUpdate, db: Session = Depends(get_db)):
     try:
-        db_channel = crud.update_channel(db, chan_id, channel.dict(exclude_unset=True))
+        db_channel = crud.update_channel(
+            db, chan_id, channel.dict(exclude_unset=True)
+        )
         return db_channel
     except KeyError:
         raise HTTPException(
@@ -185,5 +187,3 @@ def get_voice_events(since: datetime, user: int, db: Session = Depends(get_db)):
 def add_voice_event(event: schemas.VoiceEvent, db: Session = Depends(get_db)):
     db_event = crud.add_voice_event(db, event)
     return db_event
-
-
