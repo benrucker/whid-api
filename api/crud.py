@@ -23,8 +23,6 @@ def add_message(db: Session, message: schemas.MessageCreate):
 
 def update_message(db: Session, message_id: int, message: dict):
     db_message = get_message(db, message_id)
-    if db_message is None:
-        raise KeyError()
     for attr, value in message.items():
         setattr(db_message, attr, value)
     db.commit()
@@ -34,8 +32,6 @@ def update_message(db: Session, message_id: int, message: dict):
 
 def delete_message(db: Session, message_id: int):
     db_message = get_message(db, message_id)
-    if db_message is None:
-        raise KeyError()
     db.delete(db_message)
     db.commit()
     return db_message
@@ -60,8 +56,6 @@ def add_user(db: Session, user: schemas.UserCreate):
 
 def update_user(db: Session, user_id: int, user: dict):
     db_user = get_user(db, user_id)
-    if db_user is None:
-        raise KeyError()
     for attr, value in user.items():
         setattr(db_user, attr, value)
     db.commit()
@@ -71,8 +65,6 @@ def update_user(db: Session, user_id: int, user: dict):
 
 def get_user_score(db: Session, user_id: int):
     user = get_user(db, user_id)
-    if user is None:
-        raise KeyError()
     return user.scores.order_by(models.Score.iteration.desc()).first()
 
 
