@@ -1,3 +1,4 @@
+from datetime import datetime
 import pytest
 import sqlalchemy
 from fastapi import Depends
@@ -5,6 +6,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+from api import models
 
 from ..database import Base
 from ..main import app, get_db, token
@@ -17,32 +20,14 @@ engine = create_engine(
 TestingSessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine
 )
-Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
-
-
-def override_get_db():
-    # try:
-    #     db = TestingSessionLocal()
-    #     yield db
-    # finally:
-    #     db.close()
-    try:
-        connection = engine.connect()
-        transaction = connection.begin()
-        db = TestingSessionLocal(bind=connection)
-        yield db
-    finally:
-        db.close()
-        transaction.rollback()
-        connection.close()
 
 
 def override_token(creds: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     return creds.credentials == "hello"
 
 
-app.dependency_overrides[get_db] = override_get_db
+# app.dependency_overrides[get_db] = override_get_db
 app.dependency_overrides[token] = override_token
 
 
@@ -67,6 +52,12 @@ def session():
 
     # Begin a nested transaction (using SAVEPOINT).
     nested = connection.begin_nested()
+
+    session.add(models.Epoch(id=1, start=datetime(2022, 1, 1), end=datetime(2022, 3, 31)))
+    session.add(models.Epoch(id=2, start=datetime(2022, 4, 1), end=datetime(2022, 4, 7)))
+    session.add(models.Epoch(id=3, start=datetime(2022, 4, 8), end=datetime(2022, 4, 14)))
+    session.add(models.Epoch(id=4, start=datetime(2022, 4, 15), end=datetime(2022, 4, 21)))
+    session.commit()
 
     # If the application code calls session.commit, it will end the nested
     # transaction. Need to start a new one when that happens.

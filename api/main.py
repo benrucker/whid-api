@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 from .dependencies import get_db, token
-from .enums import Epoch
+from .epoch import Epoch
 
 tags = [
     {
@@ -157,8 +157,15 @@ def add_reaction(reaction: schemas.Reaction, db: Session = Depends(get_db)):
 
 
 @app.get("/reaction", response_model=list[schemas.Reaction], tags=['Reactions'])
-def get_reactions(user: int, epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
-    return crud.get_reactions_from_user(db, user, epoch)
+def get_reactions(user_id: int, epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
+    try:
+        reactions = crud.get_reactions_from_user_at_epoch(db, user_id, epoch)
+        return reactions
+    except KeyError as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No reactions found for given user and epoch"
+        )
 
 
 @app.delete('/reaction', tags=['Reactions'])

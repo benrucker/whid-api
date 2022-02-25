@@ -33,10 +33,13 @@ class Attachment(Base):
 class Reaction(Base):
     __tablename__ = "reaction"
 
-    message = Column(Integer, ForeignKey("message.id"), primary_key=True, nullable=False)
-    user = Column(Integer, ForeignKey("user.id"), primary_key=True, nullable=False)
+    msg_id = Column(Integer, ForeignKey("message.id"),
+                     primary_key=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"),
+                  primary_key=True, nullable=False)
     emoji = Column(String, primary_key=True, nullable=False)
-    Timestamp = Column(DateTime)
+    timestamp = Column(DateTime)
+
 
 class Channel(Base):
     __tablename__ = "channel"
@@ -76,6 +79,15 @@ class Score(Base):
     __tablename__ = "score"
 
     epoch = Column(Integer, primary_key=True, index=True, nullable=False)
-    user_id = Column(Integer, ForeignKey("user.id"), primary_key=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"),
+                     primary_key=True, nullable=False)
     date_processed = Column(Date, nullable=False)
     score = Column(Integer, nullable=False)
+
+
+class Epoch(Base):
+    __tablename__ = "epoch"
+
+    id = Column(Integer, primary_key=True, index=True, nullable=False)
+    start = Column(DateTime, nullable=False)
+    end = Column(DateTime, nullable=False)

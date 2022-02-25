@@ -2,11 +2,15 @@ from datetime import date, datetime
 from sqlalchemy.orm import Session
 
 from . import models, schemas
-from .enums import Epoch
+from .epoch import Epoch
+
 
 def get_message(db: Session, message_id: int):
-    db_msg = db.query(models.Message).filter(
-        models.Message.id == message_id).first()
+    db_msg = (
+        db.query(models.Message)
+        .filter(models.Message.id == message_id)
+        .first()
+    )
     if db_msg is None:
         raise KeyError()
     return db_msg
@@ -65,7 +69,7 @@ def update_user(db: Session, user_id: int, user: dict):
 
 
 def get_scores(db: Session, epoch: Epoch | int):
-    epoch = semantic_epoch_to_int(db, epoch)
+    epoch = get_epoch(db, epoch).id
     scores = db.query(models.Score) \
                .filter(models.Score.epoch == epoch) \
                .all()
@@ -74,80 +78,50 @@ def get_scores(db: Session, epoch: Epoch | int):
     return scores
 
 
-def semantic_epoch_to_int(db: Session, epoch: Epoch | int):
-    if isinstance(epoch, int):
-        return epoch
-    if epoch is Epoch.CURR:
-        return get_current_epoch(db)
-    elif epoch is Epoch.PREV:
-        return get_previous_epoch(db)
-    raise ValueError()
-
+def get_epoch(db: Session, epoch: Epoch | int):
+    if not isinstance(epoch, int):
+        if epoch is Epoch.CURR:
+            epoch = get_current_epoch(db)
+        elif epoch is Epoch.PREV:
+            epoch = get_previous_epoch(db)
+    db_epoch = db.query(models.Epoch).filter(models.Epoch.id == epoch).first()
+    if not db_epoch:
+        raise KeyError(f'No epoch found {epoch}')
+    return db_epoch
 
 
 def get_current_epoch(db: Session):
-    score = db.query(models.Score) \
-              .order_by(models.Score.epoch.desc()) \
-              .first()
-    if score is None:
-        raise KeyError()
-    return score.epoch
+    now = datetime.now()
+    epoch = (
+        db.query(models.Epoch)
+        .filter(
+            models.Epoch.start <= now,
+            now < models.Epoch.end
+        ).first()
+    )
+    if epoch is None:
+        raise Exception('Fucked!')
+    return epoch.id
 
 
 def get_previous_epoch(db: Session):
-    curr = get_current_epoch(db)
-    previous_exists = bool(
-        db.query(models.Score)
-        .filter(models.Score.epoch == curr - 1)
-        .first()
-    )
-    if not previous_exists:
-        raise KeyError()
-    return curr - 1
+    prev = get_current_epoch(db) - 1
+    if prev < 1:
+        raise KeyError('No previous epoch')
+    return prev
 
 
 def get_score(db: Session, user_id: int, epoch: Epoch | int):
-    epoch = semantic_user_epoch_to_int(db, epoch, user_id)
-    score = db.query(models.Score) \
-               .filter(models.Score.epoch == epoch) \
-               .filter(models.Score.user_id == user_id) \
-               .first()
+    epoch = get_epoch(db, epoch).id
+    score = (
+        db.query(models.Score)
+        .filter(models.Score.epoch == epoch)
+        .filter(models.Score.user_id == user_id)
+        .first()
+    )
     if not score:
         raise KeyError()
     return score
-
-
-def semantic_user_epoch_to_int(db: Session, epoch: Epoch | int, user_id: int):
-    if isinstance(epoch, int):
-        return epoch
-    if epoch is Epoch.CURR:
-        return get_current_epoch_for_user(db, user_id)
-    elif epoch is Epoch.PREV:
-        return get_previous_epoch_for_user(db, user_id)
-    raise ValueError()
-
-
-def get_current_epoch_for_user(db: Session, user_id: int):
-    score = db.query(models.Score) \
-              .filter(models.Score.user_id == user_id) \
-              .order_by(models.Score.epoch.desc()) \
-              .first()
-    if score is None:
-        raise KeyError()
-    return score.epoch
-
-
-def get_previous_epoch_for_user(db: Session, user_id: int):
-    curr = get_current_epoch_for_user(db, user_id)
-    previous_exists = bool(
-        db.query(models.Score)
-        .filter(models.Score.user_id == user_id)
-        .filter(models.Score.epoch == curr - 1)
-        .first()
-    )
-    if not previous_exists:
-        raise KeyError()
-    return curr - 1
 
 
 def add_scores(db: Session, scores: list[schemas.Score]):
@@ -170,6 +144,22 @@ def add_score_intermediate(db: Session, score: schemas.Score):
     return db_score
 
 
+def get_reactions_from_user_at_epoch(db: Session, user_id: int, epoch: Epoch | int):
+    epoch = get_epoch(db, epoch)
+    reactions = (
+        db.query(models.Reaction)
+        .filter(
+            models.Reaction.user_id == user_id,
+            epoch.start <= models.Reaction.timestamp,
+            models.Reaction.timestamp < epoch.end
+        )
+        .all()
+    )
+    if not reactions:
+        raise KeyError()
+    return reactions
+
+
 def add_reaction(db: Session, reaction: schemas.Reaction):
     db_reaction = models.Reaction(
         **reaction.dict(),
@@ -181,11 +171,15 @@ def add_reaction(db: Session, reaction: schemas.Reaction):
 
 
 def delete_reaction(db: Session, reaction: schemas.Reaction):
-    db_reaction = db.query(models.Reaction) \
-        .filter(models.Reaction.msg_id == reaction.msg_id) \
-        .filter(models.Reaction.user_id == reaction.user_id) \
-        .filter(models.Reaction.emoji == reaction.emoji) \
+    db_reaction = (
+        db.query(models.Reaction)
+        .filter(
+            models.Reaction.msg_id == reaction.msg_id,
+            models.Reaction.user_id == reaction.user_id,
+            models.Reaction.emoji == reaction.emoji,
+        )
         .first()
+    )
     if db_reaction is None:
         raise KeyError()
     db.delete(db_reaction)
@@ -232,10 +226,14 @@ def delete_channel(db: Session, channel_id: int):
 
 
 def get_voice_events(db: Session, user_id: int, since: datetime):
-    events = db.query(models.VoiceEvent) \
-        .filter(models.VoiceEvent.user_id == user_id) \
-        .filter(models.VoiceEvent.timestamp >= since) \
+    events = (
+        db.query(models.VoiceEvent)
+        .filter(
+            models.VoiceEvent.user_id == user_id,
+            models.VoiceEvent.timestamp >= since,
+        )
         .all()
+    )
     if not events:
         raise KeyError()
     return events

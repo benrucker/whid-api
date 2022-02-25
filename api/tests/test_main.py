@@ -1,9 +1,13 @@
-from datetime import date
+from datetime import date, datetime
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from ..database import Base
 from ..main import app, get_db, token
 from .setup import client, session
+
+# from .. import crud
+# from .. import main
 
 
 class TestMisc:
@@ -447,6 +451,18 @@ class TestScores:
     client = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
+    @classmethod
+    def setup_class(cls):
+        patcher = patch('api.crud.datetime')
+        mock_dt = patcher.start()
+        mock_dt.now.return_value = datetime(2022, 4, 13)
+        mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
+        cls.patcher = patcher
+
+    @classmethod
+    def teardown_class(cls):
+        cls.patcher.stop()
+
     def test_get_scores_for_epoch(self, client):
         response = self.client.get(
             "/scores?epoch=current",
@@ -485,13 +501,6 @@ class TestScores:
         assert response.status_code == 200
         assert len(response.json()) == 3
 
-        response = self.client.get(
-            "/scores?epoch=current",
-            headers=self.auth,
-        )
-        assert response.status_code == 200
-        assert len(response.json()) == 3
-
     def test_get_scores_for_user_at_epoch(self, client):
         response = self.client.get(
             "/score?epoch=1&user_id=1",
@@ -503,7 +512,7 @@ class TestScores:
             "/scores",
             headers=self.auth,
             json=[
-{
+                {
                     "epoch": 1,
                     "user_id": 1,
                     "score": 2,
@@ -541,6 +550,7 @@ class TestScores:
         assert response.json()['score'] == 2
 
     def test_epoch_semantics(self, client):
+
         response = self.client.get(
             "/score?epoch=current&user_id=1",
             headers=self.auth,
@@ -613,6 +623,7 @@ class TestScores:
         assert response.json()['score'] == 2
 
     def test_get_all_scores_for_epoch(self, client):
+
         response = self.client.post(
             "/scores",
             headers=self.auth,
@@ -676,51 +687,50 @@ class TestScores:
         ).json()
 
 
-
 class TestReactions():
     client = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
-    # def test_reaction(self, client):
-    #     response = self.client.get(
-    #         "/reaction?since=2020-01-01T00:00:00",
-    #         headers=self.auth,
-    #     )
-    #     assert response.status_code == 404
+    def test_reaction(self, client):
+        response = self.client.get(
+            "/reaction?epoch=current&user_id=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
 
-    # response = self.client.post(
-    #     "/reaction",
-    #     headers=self.auth,
-    #     json={
-    #         "user_id": 1,
-    #         "type": "like",
-    #         "channel": 1,
-    #         "timestamp": "2020-01-01T00:00:00",
-    #     }
-    # )
-    # assert response.status_code == 200
+        # response = self.client.post(
+        #     "/reaction",
+        #     headers=self.auth,
+        #     json={
+        #         "msg_id": 1,
+        #         "user_id": 1,
+        #         "emoji": "🐼",
+        #         "timestamp": "2020-01-01T00:00:00",
+        #     }
+        # )
+        # assert response.status_code == 200
 
-    # response = self.client.get(
-    #     "/reaction?since=2020-01-01T00:00:00&user=1",
-    #     headers=self.auth,
-    # )
-    # assert response.status_code == 200
-    # assert len(response.json()) == 1
-    # assert response.json()[0]['user_id'] == 1
-    # assert response.json()[0]['type'] == 'like'
-    # assert response.json()[0]['channel'] == 1
-    # assert response.json()[0]['timestamp'] == '2020-01-01T00:00:00'
+        # response = self.client.get(
+        #     "/reaction?epoch=current&user_id=1",
+        #     headers=self.auth,
+        # )
+        # assert response.status_code == 200
+        # assert len(response.json()) == 1
+        # assert response.json()[0]['user_id'] == 1
+        # assert response.json()[0]['msg_id'] == 1
+        # assert response.json()[0]['emoji'] == '🐼'
+        # assert response.json()[0]['timestamp'] == '2020-01-01T00:00:00'
 
-    # # fail when all events are in past
-    # response = self.client.get(
-    #     "/reaction?since=2020-01-02T00:00:00&user=1",
-    #     headers=self.auth,
-    # )
-    # assert response.status_code == 404
+        # # fail when all events are in past
+        # response = self.client.get(
+        #     "/reaction?since=2020-01-02T00:00:00&user=1",
+        #     headers=self.auth,
+        # )
+        # assert response.status_code == 404
 
-    # # fail when no events for user
-    # response = self.client.get(
-    #     "/reaction?since=2020-01-01T00:00:00&user=2",
-    #     headers=self.auth,
-    # )
-    # assert response.status_code == 404
+        # # fail when no events for user
+        # response = self.client.get(
+        #     "/reaction?since=2020-01-01T00:00:00&user=2",
+        #     headers=self.auth,
+        # )
+        # assert response.status_code == 404

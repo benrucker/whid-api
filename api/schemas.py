@@ -54,6 +54,7 @@ class ReactionBase(BaseModel):
     user_id: int
     msg_id: int
     emoji: str
+    timestamp: datetime
 
 
 class ReactionCreate(ReactionBase):
@@ -152,3 +153,9 @@ class UserUpdate(BaseModel):
 class User(UserBase):
     messages: list[Message]
     scores: list[Score]
+
+
+class Epoch(BaseModel):
+    id: int
+    start: datetime
+    end: datetime
