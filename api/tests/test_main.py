@@ -6,9 +6,6 @@ from ..database import Base
 from ..main import app, get_db, token
 from .setup import client, session
 
-# from .. import crud
-# from .. import main
-
 
 class TestMisc:
     client = TestClient(app)
