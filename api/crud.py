@@ -136,14 +136,6 @@ def generate_score_model(score: schemas.Score):
     )
 
 
-def add_score_intermediate(db: Session, score: schemas.Score):
-    db_score = models.Score(
-        **score.dict(),
-    )
-    db.add(db_score)
-    return db_score
-
-
 def get_reactions_from_user_at_epoch(db: Session, user_id: int, epoch: Epoch | int):
     epoch = get_epoch(db, epoch)
     reactions = (
