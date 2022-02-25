@@ -170,7 +170,7 @@ def add_reaction(db: Session, reaction: schemas.Reaction):
     return db_reaction
 
 
-def delete_reaction(db: Session, reaction: schemas.Reaction):
+def delete_reaction(db: Session, reaction: schemas.ReactionDelete):
     db_reaction = (
         db.query(models.Reaction)
         .filter(

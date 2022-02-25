@@ -57,6 +57,12 @@ class ReactionBase(BaseModel):
     timestamp: datetime
 
 
+class ReactionDelete(BaseModel):
+    user_id: int
+    msg_id: int
+    emoji: str
+
+
 class ReactionCreate(ReactionBase):
     pass
 

@@ -169,8 +169,14 @@ def get_reactions(user_id: int, epoch: Epoch | int = Epoch.CURR, db: Session = D
 
 
 @app.delete('/reaction', tags=['Reactions'])
-def delete_reaction(reaction: schemas.Reaction, db: Session = Depends(get_db)):
-    return {"msg_id": reaction.msg_id, "user_id": reaction.msg_id, "reaction": reaction.emoji}
+def delete_reaction(reaction: schemas.ReactionDelete, db: Session = Depends(get_db)):
+    try:
+        reaction = crud.delete_reaction(db, reaction)
+        return reaction
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Reaction not found"
+        )
 
 
 @app.put("/channel/{chan_id}", tags=['Channels'])
