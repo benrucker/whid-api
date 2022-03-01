@@ -781,3 +781,55 @@ class TestReactions():
         assert response.json()['user_id'] == 1
         assert response.json()['emoji'] == '🐼'
         assert response.json()['timestamp'] == '2022-04-12T00:00:00'
+
+
+class TestEpoch:
+    app = TestClient(app)
+    auth = {"Authorization": "Bearer hello"}
+
+    @classmethod
+    def setup_class(cls):
+        patcher = patch('api.crud.datetime')
+        mock_dt = patcher.start()
+        mock_dt.now.return_value = datetime(2020, 4, 13)
+        mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
+        cls.patcher = patcher
+
+    @classmethod
+    def teardown_class(cls):
+        cls.patcher.stop()
+    
+    def test_negative_epoch_not_found(self, client):
+        response = self.app.get(
+            "/scores?epoch=-1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
+    def test_incorrect_semantic_epoch_not_found(self, client):
+        response = self.app.get(
+            "/scores?epoch=hello",
+            headers=self.auth,
+        )
+        assert response.status_code == 422
+
+    def test_extremely_large_epoch_not_found(self, client):
+        response = self.app.get(
+            "/scores?epoch=999999999",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
+    def test_too_early_time_has_no_current(self, client):
+        response = self.app.get(
+            "/scores?epoch=current",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
+    def test_too_early_time_has_no_previous(self, client):
+        response = self.app.get(
+            "/scores?epoch=previous",
+            headers=self.auth,
+        )
+        assert response.status_code == 404

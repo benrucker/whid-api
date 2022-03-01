@@ -100,7 +100,7 @@ def get_current_epoch(db: Session):
         ).first()
     )
     if epoch is None:
-        raise Exception('Fucked!')
+        raise KeyError('No current epoch at current time')
     return epoch.id
 
 
