@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from . import crud, models, schemas
 from .database import SessionLocal, engine
-from .dependencies import get_db, get_token
+from .dependencies import get_db, token
 from .epoch import Epoch
 
 tags = [
@@ -44,7 +44,7 @@ app = FastAPI(
     title="what have i done API",
     description="Yet another tool for Encouraging Extra-Effective Engagement!",
     openapi_tags=tags,
-    dependencies=[Depends(get_token('.usertokens'))]
+    dependencies=[Depends(token)]
 )
 
 

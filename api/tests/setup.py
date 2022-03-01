@@ -8,10 +8,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from api import models
-from api.dependencies import get_token
 
 from ..database import Base
-from ..main import app, get_db
+from ..main import app, get_db, token
 
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -24,11 +23,17 @@ TestingSessionLocal = sessionmaker(
 Base.metadata.create_all(bind=engine)
 
 
-with open('.testtokens', 'w') as f:
-    f.write('hello\n')
+# def override_token(creds: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+#     if creds.credentials != "hello":
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             detail="Incorrect token",
+#             headers={"WWW-Authenticate": "Bearer"},
+#         )
 
 
-app.dependency_overrides[get_token('.usertokens')] = get_token('.testtokens')
+# app.dependency_overrides[get_db] = override_get_db
+# app.dependency_overrides[token] = override_token
 
 
 @sqlalchemy.event.listens_for(engine, "connect")
@@ -53,18 +58,10 @@ def session():
     # Begin a nested transaction (using SAVEPOINT).
     nested = connection.begin_nested()
 
-    session.add(models.Epoch(
-        id=1, start=datetime(2022, 1, 1), end=datetime(2022, 3, 31))
-    )
-    session.add(models.Epoch(
-        id=2, start=datetime(2022, 4, 1), end=datetime(2022, 4, 7))
-    )
-    session.add(models.Epoch(
-        id=3, start=datetime(2022, 4, 8), end=datetime(2022, 4, 14))
-    )
-    session.add(models.Epoch(
-        id=4, start=datetime(2022, 4, 15), end=datetime(2022, 4, 21))
-    )
+    session.add(models.Epoch(id=1, start=datetime(2022, 1, 1), end=datetime(2022, 3, 31)))
+    session.add(models.Epoch(id=2, start=datetime(2022, 4, 1), end=datetime(2022, 4, 7)))
+    session.add(models.Epoch(id=3, start=datetime(2022, 4, 8), end=datetime(2022, 4, 14)))
+    session.add(models.Epoch(id=4, start=datetime(2022, 4, 15), end=datetime(2022, 4, 21)))
     session.commit()
 
     # If the application code calls session.commit, it will end the nested
