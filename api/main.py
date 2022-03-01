@@ -64,15 +64,13 @@ def read_message(msg_id: int, db: Session = Depends(get_db)):
 
 @app.put("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
 def add_message(msg_id: int, message: schemas.MessageCreate, db: Session = Depends(get_db)):
-    msg = crud.add_message(db, message)
-    return msg
+    return crud.add_message(db, message)
 
 
 @app.patch("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
 def update_message(msg_id: int, message: schemas.MessageUpdate, db: Session = Depends(get_db)):
     try:
-        msg = crud.update_message(db, msg_id, message.dict(exclude_unset=True))
-        return msg
+        return crud.update_message(db, msg_id, message.dict(exclude_unset=True))
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
@@ -81,8 +79,7 @@ def update_message(msg_id: int, message: schemas.MessageUpdate, db: Session = De
 @app.delete("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
 def delete_message(msg_id: int, db: Session = Depends(get_db)):
     try:
-        msg = crud.delete_message(db, msg_id)
-        return msg
+        return crud.delete_message(db, msg_id)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
@@ -91,8 +88,7 @@ def delete_message(msg_id: int, db: Session = Depends(get_db)):
 @app.put("/pin/{msg_id}", response_model=schemas.Message, tags=["Messages"])
 def pin_message(msg_id, db: Session = Depends(get_db)):
     try:
-        msg = crud.update_message(db, msg_id, {"pinned": True})
-        return msg
+        return crud.update_message(db, msg_id, {"pinned": True})
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
@@ -101,8 +97,7 @@ def pin_message(msg_id, db: Session = Depends(get_db)):
 @app.get("/user/{user_id}", response_model=schemas.UserBase, tags=["Users"])
 def get_user(user_id: int, db: Session = Depends(get_db)):
     try:
-        db_user = crud.get_user(db, user_id)
-        return db_user
+        return crud.get_user(db, user_id)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -110,15 +105,13 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
 @app.put("/user/{user_id}", response_model=schemas.User, tags=["Users"])
 def add_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.add_user(db, user)
-    return db_user
+    return crud.add_user(db, user)
 
 
 @app.patch("/user/{user_id}", response_model=schemas.User, tags=["Users"])
 def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(get_db)):
     try:
-        db_user = crud.update_user(db, user_id, data.dict(exclude_unset=True))
-        return db_user
+        return crud.update_user(db, user_id, data.dict(exclude_unset=True))
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -127,8 +120,7 @@ def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(ge
 @app.get("/scores", response_model=list[schemas.Score], tags=["Scores"])
 def get_scores(epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
-        score = crud.get_scores(db, epoch)
-        return score
+        return crud.get_scores(db, epoch)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No scores found for given epoch")
@@ -137,8 +129,7 @@ def get_scores(epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
 @app.get("/score", response_model=schemas.Score, tags=["Scores"])
 def get_score(user_id: int, epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
-        score = crud.get_score(db, user_id, epoch)
-        return score
+        return crud.get_score(db, user_id, epoch)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No score found for given user and epoch")
@@ -152,15 +143,13 @@ def add_scores(scores: list[schemas.ScoreCreate], db: Session = Depends(get_db))
 
 @app.post("/reaction", response_model=schemas.Reaction, tags=['Reactions'])
 def add_reaction(reaction: schemas.Reaction, db: Session = Depends(get_db)):
-    db_reaction = crud.add_reaction(db, reaction)
-    return db_reaction
+    return crud.add_reaction(db, reaction)
 
 
 @app.get("/reaction", response_model=list[schemas.Reaction], tags=['Reactions'])
 def get_reactions(user_id: int, epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
-        reactions = crud.get_reactions_from_user_at_epoch(db, user_id, epoch)
-        return reactions
+        return crud.get_reactions_from_user_at_epoch(db, user_id, epoch)
     except KeyError as e:
         print(e)
         raise HTTPException(
@@ -171,8 +160,7 @@ def get_reactions(user_id: int, epoch: Epoch | int = Epoch.CURR, db: Session = D
 @app.delete('/reaction', tags=['Reactions'])
 def delete_reaction(reaction: schemas.ReactionDelete, db: Session = Depends(get_db)):
     try:
-        reaction = crud.delete_reaction(db, reaction)
-        return reaction
+        return crud.delete_reaction(db, reaction)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Reaction not found"
@@ -181,15 +169,13 @@ def delete_reaction(reaction: schemas.ReactionDelete, db: Session = Depends(get_
 
 @app.put("/channel/{chan_id}", response_model=schemas.Channel, tags=['Channels'])
 def add_channel(chan_id: int, channel: schemas.ChannelCreate, db: Session = Depends(get_db)):
-    db_channel = crud.add_channel(db, channel)
-    return db_channel
+    return crud.add_channel(db, channel)
 
 
 @app.get("/channel/{chan_id}", response_model=schemas.Channel, tags=['Channels'])
 def get_channel(chan_id: int, db: Session = Depends(get_db)):
     try:
-        db_channel = crud.get_channel(db, chan_id)
-        return db_channel
+        return crud.get_channel(db, chan_id)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Channel not found")
@@ -198,10 +184,9 @@ def get_channel(chan_id: int, db: Session = Depends(get_db)):
 @app.patch("/channel/{chan_id}", response_model=schemas.Channel, tags=['Channels'])
 def update_channel(chan_id: int, channel: schemas.ChannelUpdate, db: Session = Depends(get_db)):
     try:
-        db_channel = crud.update_channel(
+        return crud.update_channel(
             db, chan_id, channel.dict(exclude_unset=True)
         )
-        return db_channel
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Channel not found")
@@ -210,8 +195,7 @@ def update_channel(chan_id: int, channel: schemas.ChannelUpdate, db: Session = D
 @app.delete("/channel/{chan_id}", response_model=schemas.Channel, tags=['Channels'])
 def delete_channel(chan_id: int, db: Session = Depends(get_db)):
     try:
-        db_channel = crud.delete_channel(db, chan_id)
-        return db_channel
+        return crud.delete_channel(db, chan_id)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Channel not found")
@@ -220,8 +204,7 @@ def delete_channel(chan_id: int, db: Session = Depends(get_db)):
 @app.get("/voice_event", response_model=list[schemas.VoiceEvent], tags=['Misc Events'])
 def get_voice_events(since: datetime, user: int, db: Session = Depends(get_db)):
     try:
-        events = crud.get_voice_events(db, user, since)
-        return events
+        return crud.get_voice_events(db, user, since)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Events not found")
@@ -229,5 +212,4 @@ def get_voice_events(since: datetime, user: int, db: Session = Depends(get_db)):
 
 @app.post("/voice_event", response_model=schemas.VoiceEvent, tags=["Misc Events"])
 def add_voice_event(event: schemas.VoiceEvent, db: Session = Depends(get_db)):
-    db_event = crud.add_voice_event(db, event)
-    return db_event
+    return crud.add_voice_event(db, event)
