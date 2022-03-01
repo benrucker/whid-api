@@ -318,6 +318,38 @@ class TestChannels:
         assert response.json()['name'] == 'new channel'
         assert response.json()['category'] == 'general2'
 
+    def test_delete_nonexistant_channel(self, client):
+        response = self.app.delete(
+            "/channel/1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
+    def test_delete_channel(self, client):
+        response = self.app.put(
+            "/channel/1",
+            headers=self.auth,
+            json={
+                "id": 1,
+                "name": "channel",
+                "category": "general",
+                "thread": False,
+            }
+        )
+        assert response.status_code == 200
+
+        response = self.app.delete(
+            "/channel/1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+
+        response = self.app.get(
+            "/channel/1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+
 
 class TestUsers():
     app = TestClient(app)

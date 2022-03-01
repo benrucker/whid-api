@@ -199,8 +199,6 @@ def get_channel(db: Session, channel_id: int):
 
 def update_channel(db: Session, channel_id: int, channel: dict):
     db_channel = get_channel(db, channel_id)
-    if db_channel is None:
-        raise KeyError()
     for attr, value in channel.items():
         setattr(db_channel, attr, value)
     db.commit()
@@ -210,8 +208,6 @@ def update_channel(db: Session, channel_id: int, channel: dict):
 
 def delete_channel(db: Session, channel_id: int):
     db_channel = get_channel(db, channel_id)
-    if db_channel is None:
-        raise KeyError()
     db.delete(db_channel)
     db.commit()
     return db_channel

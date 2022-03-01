@@ -179,7 +179,7 @@ def delete_reaction(reaction: schemas.ReactionDelete, db: Session = Depends(get_
         )
 
 
-@app.put("/channel/{chan_id}", tags=['Channels'])
+@app.put("/channel/{chan_id}", response_model=schemas.Channel, tags=['Channels'])
 def add_channel(chan_id: int, channel: schemas.ChannelCreate, db: Session = Depends(get_db)):
     db_channel = crud.add_channel(db, channel)
     return db_channel
@@ -195,12 +195,22 @@ def get_channel(chan_id: int, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="Channel not found")
 
 
-@app.patch("/channel/{chan_id}", tags=['Channels'])
+@app.patch("/channel/{chan_id}", response_model=schemas.Channel, tags=['Channels'])
 def update_channel(chan_id: int, channel: schemas.ChannelUpdate, db: Session = Depends(get_db)):
     try:
         db_channel = crud.update_channel(
             db, chan_id, channel.dict(exclude_unset=True)
         )
+        return db_channel
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Channel not found")
+
+
+@app.delete("/channel/{chan_id}", response_model=schemas.Channel, tags=['Channels'])
+def delete_channel(chan_id: int, db: Session = Depends(get_db)):
+    try:
+        db_channel = crud.delete_channel(db, chan_id)
         return db_channel
     except KeyError:
         raise HTTPException(
