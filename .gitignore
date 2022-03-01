@@ -1,6 +1,7 @@
 .venv
 __pycache__
 .usertokens
+.testtokens
 *.db
 .coverage
 coverage.xml
