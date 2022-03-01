@@ -1,7 +1,7 @@
 from datetime import datetime
 import pytest
 import sqlalchemy
-from fastapi import Depends, status, HTTPException
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -23,17 +23,12 @@ TestingSessionLocal = sessionmaker(
 Base.metadata.create_all(bind=engine)
 
 
-# def override_token(creds: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
-#     if creds.credentials != "hello":
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Incorrect token",
-#             headers={"WWW-Authenticate": "Bearer"},
-#         )
+def override_token(creds: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+    return creds.credentials == "hello"
 
 
 # app.dependency_overrides[get_db] = override_get_db
-# app.dependency_overrides[token] = override_token
+app.dependency_overrides[token] = override_token
 
 
 @sqlalchemy.event.listens_for(engine, "connect")

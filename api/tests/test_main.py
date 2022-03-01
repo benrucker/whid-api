@@ -8,27 +8,16 @@ from .setup import client, session
 
 class TestMisc:
     app = TestClient(app)
+    auth = {"Authorization": "Bearer hello"}
 
     def test_main(self):
         response = self.app.get(
             "/",
-            headers={"Authorization": "Bearer hello"}
+            headers=self.auth
         )
         assert response.status_code == 200
         assert response.json() == {"Hello": "World"}
 
-    def test_no_auth_forbidden(self, client):
-        response = self.app.get(
-            "/",
-        )
-        assert response.status_code == 403
-
-    def test_wrong_key_forbidden(self):
-        response = self.app.get(
-            "/",
-            headers={"Authorization": "Bearer schlong"}
-        )
-        assert response.status_code == 401
 
 class TestMessages:
     app = TestClient(app)
