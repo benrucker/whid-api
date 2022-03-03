@@ -23,14 +23,6 @@ TestingSessionLocal = sessionmaker(
 Base.metadata.create_all(bind=engine)
 
 
-def override_token(creds: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
-    return creds.credentials == "hello"
-
-
-# app.dependency_overrides[get_db] = override_get_db
-app.dependency_overrides[token] = override_token
-
-
 @sqlalchemy.event.listens_for(engine, "connect")
 def do_connect(dbapi_connection, connection_record):
     # disable pysqlite's emitting of the BEGIN statement entirely.
