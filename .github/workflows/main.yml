@@ -30,7 +30,7 @@ jobs:
       - uses: paambaati/codeclimate-action@v3.0.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-          API_TOKENS: "['hello', 'phat']"
+          API_TOKENS: '["hello", "phat"]'
           DB_URL: "sqlite:///./sql_app.db"
         with:
           coverageCommand: pytest --cov=api --cov-report=xml
