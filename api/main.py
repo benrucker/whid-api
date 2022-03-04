@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 from .dependencies import get_db, token
-from .epoch import Epoch
+from .enums import Epoch
 
 tags = [
     {

@@ -2,7 +2,7 @@ from datetime import date, datetime
 from sqlalchemy.orm import Session
 
 from . import models, schemas
-from .epoch import Epoch
+from .enums import Epoch
 
 
 def get_message(db: Session, message_id: int):

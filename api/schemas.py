@@ -1,6 +1,8 @@
 from datetime import date, datetime
 from pydantic import BaseModel, HttpUrl
 
+from .enums import VoiceEventType
+
 
 class AttachmentBase(BaseModel):
     msg_id: int
@@ -100,7 +102,7 @@ class ChannelUpdate(BaseModel):
 
 class VoiceEventBase(BaseModel):
     user_id: int
-    type: str
+    type: VoiceEventType
     channel: int
     timestamp: datetime
 

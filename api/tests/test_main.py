@@ -1,6 +1,7 @@
 from datetime import datetime
 from unittest.mock import patch
 from fastapi.testclient import TestClient
+import pytest
 
 from ..main import app
 from .setup import client, session
@@ -430,7 +431,26 @@ class TestEvents:
     app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
-    def test_voice_event(self, client):
+    @pytest.mark.parametrize(
+        "event_type", [
+            "join",
+            "leave",
+            "move",
+            "deafen",
+            "undeafen",
+            "mute",
+            "unmute",
+            "server deafen",
+            "server undeafen",
+            "server mute",
+            "server unmute",
+            "webcam start",
+            "webcam stop",
+            "stream start",
+            "stream stop",
+        ]
+    )
+    def test_voice_event(self, client, event_type):
         response = self.app.get(
             "/voice_event?since=2020-01-01T00:00:00&user=1",
             headers=self.auth,
@@ -442,7 +462,7 @@ class TestEvents:
             headers=self.auth,
             json={
                 "user_id": 1,
-                "type": "join",
+                "type": event_type,
                 "channel": 1,
                 "timestamp": "2020-01-01T00:00:00",
             }
@@ -456,7 +476,7 @@ class TestEvents:
         assert response.status_code == 200
         assert len(response.json()) == 1
         assert response.json()[0]['user_id'] == 1
-        assert response.json()[0]['type'] == 'join'
+        assert response.json()[0]['type'] == event_type
         assert response.json()[0]['channel'] == 1
         assert response.json()[0]['timestamp'] == '2020-01-01T00:00:00'
 
@@ -474,12 +494,32 @@ class TestEvents:
         )
         assert response.status_code == 404
 
+    @pytest.mark.parametrize(
+        "event_type", [
+            "not an event",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "",
+        ]
+    )
+    def test_voice_event_invalid_type(self, client, event_type):
+        response = self.app.post(
+            "/voice_event",
+            headers=self.auth,
+            json={
+                "user_id": 1,
+                "type": event_type,
+                "channel": 1,
+                "timestamp": "2020-01-01T00:00:00",
+            }
+        )
+        assert response.status_code == 422
+
 
 class TestScores:
     app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
-    @classmethod
+    @ classmethod
     def setup_class(cls):
         patcher = patch('api.crud.datetime')
         mock_dt = patcher.start()
@@ -487,7 +527,7 @@ class TestScores:
         mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
         cls.patcher = patcher
 
-    @classmethod
+    @ classmethod
     def teardown_class(cls):
         cls.patcher.stop()
 
@@ -719,7 +759,7 @@ class TestReactions():
     app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
-    @classmethod
+    @ classmethod
     def setup_class(cls):
         patcher = patch('api.crud.datetime')
         mock_dt = patcher.start()
@@ -727,7 +767,7 @@ class TestReactions():
         mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
         cls.patcher = patcher
 
-    @classmethod
+    @ classmethod
     def teardown_class(cls):
         cls.patcher.stop()
 
@@ -819,7 +859,7 @@ class TestEpoch:
     app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
-    @classmethod
+    @ classmethod
     def setup_class(cls):
         patcher = patch('api.crud.datetime')
         mock_dt = patcher.start()
@@ -827,10 +867,10 @@ class TestEpoch:
         mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
         cls.patcher = patcher
 
-    @classmethod
+    @ classmethod
     def teardown_class(cls):
         cls.patcher.stop()
-    
+
     def test_negative_epoch_not_found(self, client):
         response = self.app.get(
             "/scores?epoch=-1",
