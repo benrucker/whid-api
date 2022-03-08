@@ -336,6 +336,31 @@ class TestMultipleMessages:
     def teardown_class(cls):
         cls.patcher.stop()
 
+    def test_getting_before_any_messages_fails(self, client):
+        response = client.get(
+            "/message?user_id=1",
+            headers=AUTH,
+        )
+        assert response.status_code == 404
+
+        response = client.get(
+            "/message?user_id=1&epoch=current",
+            headers=AUTH,
+        )
+        assert response.status_code == 404
+
+        response = client.get(
+            "/message?user_id=2&epoch=current",
+            headers=AUTH,
+        )
+        assert response.status_code == 404
+
+        response = client.get(
+            "/message?user_id=2&epoch=previous",
+            headers=AUTH,
+        )
+        assert response.status_code == 404
+
     def test_get_multiple_messages_at_epoch(self, client):
         response = client.put(
             "/message/1",
