@@ -77,9 +77,16 @@ def read_message(msg_id: int, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
 
-@app.put("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
+@app.put("/message/{msg_id}", response_model=schemas.MessageOnCreate, tags=['Messages'])
 def add_message(msg_id: int, message: schemas.MessageCreate, db: Session = Depends(get_db)):
-    return crud.add_message(db, message)
+    db_msg = crud.add_message(db, message)
+
+    try: crud.get_user(db, message.author)
+    except KeyError: db_msg.user_exists = False
+    try: crud.get_channel(db, message.channel)
+    except KeyError: db_msg.channel_exists = False
+    
+    return db_msg
 
 
 @app.patch("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])

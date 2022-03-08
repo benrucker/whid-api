@@ -252,6 +252,76 @@ class TestMessages:
         assert response.status_code == 404
 
 
+class TestMessagesExistanceResponses:
+    def test_put_message_without_user_or_channel(self, client):
+        response = client.put(
+            "/message/1",
+            headers=AUTH,
+            json={
+                "id": 1,
+                "timestamp": "2020-01-01T00:00:00",
+                "content": "hello",
+                "author": 1,
+                "channel": 1,
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()['user_exists'] == False
+        assert response.json()['channel_exists'] == False
+
+    def test_put_message_with_user(self, client):
+        response = client.put(
+            "/user/1",
+            headers=AUTH,
+            json={
+                "id": 1,
+                "username": "test",
+                "numbers": 5555,
+            },
+        )
+        assert response.status_code == 200
+
+        response = client.put(
+            "/message/1",
+            headers=AUTH,
+            json={
+                "id": 1,
+                "timestamp": "2020-01-01T00:00:00",
+                "content": "hello",
+                "author": 1,
+                "channel": 1,
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()['user_exists'] == True
+
+    def test_put_message_with_channel(self, client):
+        response = client.put(
+            "/channel/1",
+            headers=AUTH,
+            json={
+                "id": 1,
+                "category": "cat",
+                "name": "channelname",
+            },
+        )
+        assert response.status_code == 200
+
+        response = client.put(
+            "/message/1",
+            headers=AUTH,
+            json={
+                "id": 1,
+                "timestamp": "2020-01-01T00:00:00",
+                "content": "hello",
+                "author": 1,
+                "channel": 1,
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()['channel_exists'] == True
+
+
 class TestMultipleMessages:
     @ classmethod
     def setup_class(cls):
