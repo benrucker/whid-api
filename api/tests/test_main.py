@@ -499,6 +499,14 @@ class TestEvents:
         assert datetime.fromisoformat(response.json()[0]['timestamp']) \
              == DAY_IN_SECOND_EPOCH
 
+        response = self.app.get(
+            "/voice_event?user=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json()[0]['user_id'] == 1
+
         # fail when epoch has no events
         response = self.app.get(
             "/voice_event?epoch=previous&user=1",

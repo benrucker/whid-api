@@ -97,6 +97,7 @@ def epoch_to_int(db: Session, epoch: Epoch | int):
             pass
     return epoch
 
+
 def get_current_epoch(db: Session):
     now = datetime.now()
     epoch = (
@@ -220,12 +221,11 @@ def delete_channel(db: Session, channel_id: int):
     return db_channel
 
 
-def get_voice_events(db: Session, user_id: int, since: datetime):
+def get_voice_events(db: Session, user_id: int):
     events = (
         db.query(models.VoiceEvent)
         .filter(
             models.VoiceEvent.user_id == user_id,
-            models.VoiceEvent.timestamp >= since,
         )
         .all()
     )
