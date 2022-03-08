@@ -144,6 +144,17 @@ def generate_score_model(score: schemas.Score):
     )
 
 
+def get_reactions_from_user(db: Session, user_id: int):
+    reactions = (
+        db.query(models.Reaction)
+        .filter(models.Reaction.user_id == user_id)
+        .all()
+    )
+    if not reactions:
+        raise KeyError()
+    return reactions
+
+
 def get_reactions_from_user_at_epoch(db: Session, user_id: int, epoch: Epoch | int):
     epoch = get_epoch(db, epoch)
     reactions = (

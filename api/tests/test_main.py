@@ -833,6 +833,17 @@ class TestReactions():
         assert response.json()[0]['emoji'] == '🐼'
         assert response.json()[0]['timestamp'] == '2022-04-12T00:00:00'
 
+        response = self.app.get(
+            "/reaction?user_id=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json()[0]['user_id'] == 1
+        assert response.json()[0]['msg_id'] == 1
+        assert response.json()[0]['emoji'] == '🐼'
+        assert response.json()[0]['timestamp'] == '2022-04-12T00:00:00'
+
         # fail when epoch has none
         response = self.app.get(
             "/reaction?epoch=previous&user_id=1",

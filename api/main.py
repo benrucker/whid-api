@@ -147,9 +147,12 @@ def add_reaction(reaction: schemas.Reaction, db: Session = Depends(get_db)):
 
 
 @app.get("/reaction", response_model=list[schemas.Reaction], tags=['Reactions'])
-def get_reactions(user_id: int, epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
+def get_reactions(user_id: int, epoch: Epoch | int | None = None, db: Session = Depends(get_db)):
     try:
-        return crud.get_reactions_from_user_at_epoch(db, user_id, epoch)
+        if epoch:
+            return crud.get_reactions_from_user_at_epoch(db, user_id, epoch)
+        else:
+            return crud.get_reactions_from_user(db, user_id)
     except KeyError as e:
         print(e)
         raise HTTPException(
