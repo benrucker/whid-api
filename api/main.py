@@ -53,6 +53,21 @@ def read_root():
     return {"Hello": "World"}
 
 
+@app.get("/message", response_model=list[schemas.Message], tags=['Messages'])
+def read_messages(user_id: int, epoch: Epoch | int | None = None, db: Session = Depends(get_db)):
+    try:
+        if epoch is None:
+            return crud.get_messages_from_user(db, user_id)
+        else:
+            return crud.get_messages_from_user_during_epoch(db, user_id, epoch)
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No messages found for user"
+                + f" at epoch {epoch}" if epoch else ""
+        )
+
+
 @app.get("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
 def read_message(msg_id: int, db: Session = Depends(get_db)):
     try:

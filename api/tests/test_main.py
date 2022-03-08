@@ -14,11 +14,10 @@ DAY_IN_THIRD_EPOCH = datetime(2022, 4, 15)
 
 
 class TestMisc:
-    app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
-    def test_main(self):
-        response = self.app.get(
+    def test_main(self, client):
+        response = client.get(
             "/",
             headers=self.auth
         )
@@ -27,17 +26,16 @@ class TestMisc:
 
 
 class TestMessages:
-    app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
     def test_message(self, client):
-        response = self.app.get(
+        response = client.get(
             "/message/1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
-        response = self.app.put(
+        response = client.put(
             "/message/1",
             headers=self.auth,
             json={
@@ -50,7 +48,7 @@ class TestMessages:
         )
         assert response.status_code == 200
 
-        response = self.app.get(
+        response = client.get(
             "/message/1",
             headers=self.auth,
         )
@@ -66,13 +64,13 @@ class TestMessages:
         assert response.json()['pinned'] == False
 
     def test_message_with_attachments(self, client):
-        response = self.app.get(
+        response = client.get(
             "/message/1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
-        response = self.app.put(
+        response = client.put(
             "/message/1",
             headers=self.auth,
             json={
@@ -95,7 +93,7 @@ class TestMessages:
         )
         assert response.status_code == 200
 
-        response = self.app.get(
+        response = client.get(
             "/message/1",
             headers=self.auth,
         )
@@ -121,7 +119,7 @@ class TestMessages:
         ]
 
     def test_update_nonexistant_message(self, client):
-        response = self.app.patch(
+        response = client.patch(
             "/message/1",
             headers=self.auth,
             json={
@@ -133,7 +131,7 @@ class TestMessages:
         assert response.status_code == 404
 
     def test_update_message(self, client):
-        response = self.app.put(
+        response = client.put(
             "/message/1",
             headers=self.auth,
             json={
@@ -146,7 +144,7 @@ class TestMessages:
         )
         assert response.status_code == 200
 
-        response = self.app.patch(
+        response = client.patch(
             "/message/1",
             headers=self.auth,
             json={
@@ -160,14 +158,14 @@ class TestMessages:
         assert response.json()['edited'] == True
         assert response.json()['edited_timestamp'] == '2020-01-01T00:00:00'
 
-        response = self.app.put(
+        response = client.put(
             "/pin/1",
             headers=self.auth,
         )
         assert response.status_code == 200
         assert response.json()['pinned'] == True
 
-        response = self.app.patch(
+        response = client.patch(
             "/message/1",
             headers=self.auth,
             json={
@@ -178,7 +176,7 @@ class TestMessages:
         assert response.json()['deleted'] == True
 
     def test_malformed_attachment_fails_to_create(self, client):
-        response = self.app.put(
+        response = client.put(
             "/message/1",
             headers=self.auth,
             json={
@@ -196,7 +194,7 @@ class TestMessages:
         )
         assert response.status_code == 422
 
-        response = self.app.put(
+        response = client.put(
             "/message/1",
             headers=self.auth,
             json={
@@ -215,21 +213,21 @@ class TestMessages:
         assert response.status_code == 422
 
     def test_pin_nonexistant_message(self, client):
-        response = self.app.put(
+        response = client.put(
             "/pin/1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
     def test_delete_nonexistant_message(self, client):
-        response = self.app.delete(
+        response = client.delete(
             "/message/1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
     def test_delete_message(self, client):
-        response = self.app.put(
+        response = client.put(
             "/message/1",
             headers=self.auth,
             json={
@@ -242,31 +240,98 @@ class TestMessages:
         )
         assert response.status_code == 200
 
-        response = self.app.delete(
+        response = client.delete(
             "/message/1",
             headers=self.auth,
         )
         assert response.status_code == 200
 
-        response = self.app.get(
+        response = client.get(
             "/message/1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
 
+class TestMultipleMessages():
+    auth = {"Authorization": "Bearer hello"}
+
+    @ classmethod
+    def setup_class(cls):
+        patcher = patch('api.crud.datetime')
+        mock_dt = patcher.start()
+        mock_dt.now.return_value = DAY_IN_THIRD_EPOCH
+        mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
+        cls.patcher = patcher
+
+    @ classmethod
+    def teardown_class(cls):
+        cls.patcher.stop()
+
+    def test_get_multiple_messages_at_epoch(self, client):
+        response = client.put(
+            "/message/1",
+            headers=self.auth,
+            json={
+                "id": 1,
+                "timestamp": str(DAY_IN_THIRD_EPOCH),
+                "content": "hello",
+                "author": 1,
+                "channel": 1,
+            },
+        )
+        assert response.status_code == 200
+
+        response = client.put(
+            "/message/2",
+            headers=self.auth,
+            json={
+                "id": 2,
+                "timestamp": str(DAY_IN_THIRD_EPOCH),
+                "content": "hello 2",
+                "author": 1,
+                "channel": 1,
+            },
+        )
+        assert response.status_code == 200
+
+        response = client.put(
+            "/message/3",
+            headers=self.auth,
+            json={
+                "id": 3,
+                "timestamp": str(DAY_IN_THIRD_EPOCH),
+                "content": "hello 3",
+                "author": 2,
+                "channel": 1,
+            },
+        )
+        assert response.status_code == 200
+
+        response = client.get(
+            "/message?user_id=1&epoch=current",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+
+        response = client.get(
+            "/message?user_id=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+
+
 class TestChannels:
-    app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
     def test_channel(self, client):
-        response = self.app.get(
+        response = client.get(
             "/channel/1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
-        response = self.app.put(
+        response = client.put(
             "/channel/1",
             headers=self.auth,
             json={
@@ -278,7 +343,7 @@ class TestChannels:
         )
         assert response.status_code == 200
 
-        response = self.app.get(
+        response = client.get(
             "/channel/1",
             headers=self.auth,
         )
@@ -289,7 +354,7 @@ class TestChannels:
         assert response.json()['thread'] == False
 
     def test_update_nonexistant_channel(self, client):
-        response = self.app.patch(
+        response = client.patch(
             "/channel/1",
             headers=self.auth,
             json={
@@ -299,7 +364,7 @@ class TestChannels:
         assert response.status_code == 404
 
     def test_update_channel(self, client):
-        response = self.app.put(
+        response = client.put(
             "/channel/1",
             headers=self.auth,
             json={
@@ -313,7 +378,7 @@ class TestChannels:
         assert response.json()['name'] != 'new channel'
         assert response.json()['category'] != 'general2'
 
-        response = self.app.patch(
+        response = client.patch(
             "/channel/1",
             headers=self.auth,
             json={
@@ -326,14 +391,14 @@ class TestChannels:
         assert response.json()['category'] == 'general2'
 
     def test_delete_nonexistant_channel(self, client):
-        response = self.app.delete(
+        response = client.delete(
             "/channel/1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
     def test_delete_channel(self, client):
-        response = self.app.put(
+        response = client.put(
             "/channel/1",
             headers=self.auth,
             json={
@@ -345,13 +410,13 @@ class TestChannels:
         )
         assert response.status_code == 200
 
-        response = self.app.delete(
+        response = client.delete(
             "/channel/1",
             headers=self.auth,
         )
         assert response.status_code == 200
 
-        response = self.app.get(
+        response = client.get(
             "/channel/1",
             headers=self.auth,
         )
@@ -359,17 +424,16 @@ class TestChannels:
 
 
 class TestUsers():
-    app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
     def test_user(self, client):
-        response = self.app.get(
+        response = client.get(
             "/user/1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
-        response = self.app.put(
+        response = client.put(
             "/user/1",
             headers=self.auth,
             json={
@@ -381,7 +445,7 @@ class TestUsers():
         )
         assert response.status_code == 200
 
-        response = self.app.get(
+        response = client.get(
             "/user/1",
             headers=self.auth,
         )
@@ -392,7 +456,7 @@ class TestUsers():
         assert response.json()['numbers'] == 8098
 
     def test_update_nonexistant_user(self, client):
-        response = self.app.patch(
+        response = client.patch(
             "/user/1",
             headers=self.auth,
             json={
@@ -402,7 +466,7 @@ class TestUsers():
         assert response.status_code == 404
 
     def test_update_user(self, client):
-        response = self.app.put(
+        response = client.put(
             "/user/1",
             headers=self.auth,
             json={
@@ -419,7 +483,7 @@ class TestUsers():
         assert response.json()['nickname'] != 'new nickname'
         assert response.json()['numbers'] == 8098
 
-        response = self.app.patch(
+        response = client.patch(
             "/user/1",
             headers=self.auth,
             json={
@@ -434,7 +498,6 @@ class TestUsers():
 
 
 class TestEvents:
-    app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
     @ classmethod
@@ -469,13 +532,13 @@ class TestEvents:
         ]
     )
     def test_voice_event(self, client, event_type):
-        response = self.app.get(
+        response = client.get(
             "/voice_event?epoch=current&user=1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
-        response = self.app.post(
+        response = client.post(
             "/voice_event",
             headers=self.auth,
             json={
@@ -487,7 +550,7 @@ class TestEvents:
         )
         assert response.status_code == 200
 
-        response = self.app.get(
+        response = client.get(
             "/voice_event?epoch=current&user=1",
             headers=self.auth,
         )
@@ -497,9 +560,9 @@ class TestEvents:
         assert response.json()[0]['type'] == event_type
         assert response.json()[0]['channel'] == 1
         assert datetime.fromisoformat(response.json()[0]['timestamp']) \
-             == DAY_IN_SECOND_EPOCH
+            == DAY_IN_SECOND_EPOCH
 
-        response = self.app.get(
+        response = client.get(
             "/voice_event?user=1",
             headers=self.auth,
         )
@@ -508,19 +571,19 @@ class TestEvents:
         assert response.json()[0]['user_id'] == 1
 
         # fail when epoch has no events
-        response = self.app.get(
+        response = client.get(
             "/voice_event?epoch=previous&user=1",
             headers=self.auth,
         )
         assert response.status_code == 404
-        response = self.app.get(
+        response = client.get(
             "/voice_event?epoch=1&user=1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
         # fail when no events for user
-        response = self.app.get(
+        response = client.get(
             "/voice_event?epoch=current&user=2",
             headers=self.auth,
         )
@@ -534,7 +597,7 @@ class TestEvents:
         ]
     )
     def test_voice_event_invalid_type(self, client, event_type):
-        response = self.app.post(
+        response = client.post(
             "/voice_event",
             headers=self.auth,
             json={
@@ -548,7 +611,6 @@ class TestEvents:
 
 
 class TestScores:
-    app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
     @ classmethod
@@ -564,13 +626,13 @@ class TestScores:
         cls.patcher.stop()
 
     def test_get_scores_for_epoch(self, client):
-        response = self.app.get(
+        response = client.get(
             "/scores?epoch=current",
             headers=self.auth,
         )
         assert response.status_code == 404
 
-        response = self.app.post(
+        response = client.post(
             "/scores",
             headers=self.auth,
             json=[
@@ -594,7 +656,7 @@ class TestScores:
         assert response.status_code == 200
         assert response.json() == "success! 3 scores have been processed"
 
-        response = self.app.get(
+        response = client.get(
             "/scores?epoch=1",
             headers=self.auth,
         )
@@ -602,13 +664,13 @@ class TestScores:
         assert len(response.json()) == 3
 
     def test_get_scores_for_user_at_epoch(self, client):
-        response = self.app.get(
+        response = client.get(
             "/score?epoch=1&user_id=1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
-        response = self.app.post(
+        response = client.post(
             "/scores",
             headers=self.auth,
             json=[
@@ -641,7 +703,7 @@ class TestScores:
         )
         assert response.status_code == 200
 
-        response = self.app.get(
+        response = client.get(
             "/score?epoch=1&user_id=1",
             headers=self.auth,
         )
@@ -651,13 +713,13 @@ class TestScores:
 
     def test_epoch_semantics(self, client):
 
-        response = self.app.get(
+        response = client.get(
             "/score?epoch=current&user_id=1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
-        response = self.app.post(
+        response = client.post(
             "/scores",
             headers=self.auth,
             json=[
@@ -690,31 +752,31 @@ class TestScores:
         )
         assert response.status_code == 200
 
-        response = self.app.get(
+        response = client.get(
             "/score?epoch=current&user_id=1",
             headers=self.auth,
         )
         assert response.status_code == 200
         assert response.json()['user_id'] == 1
         assert response.json()['score'] == 8
-        assert response.json() == self.app.get(
+        assert response.json() == client.get(
             "/score?epoch=3&user_id=1",
             headers=self.auth,
         ).json()
 
-        response = self.app.get(
+        response = client.get(
             "/score?epoch=previous&user_id=1",
             headers=self.auth,
         )
         assert response.status_code == 200
         assert response.json()['user_id'] == 1
         assert response.json()['score'] == 4
-        assert response.json() == self.app.get(
+        assert response.json() == client.get(
             "/score?epoch=2&user_id=1",
             headers=self.auth,
         ).json()
 
-        response = self.app.get(
+        response = client.get(
             "/score?epoch=1&user_id=1",
             headers=self.auth,
         )
@@ -724,7 +786,7 @@ class TestScores:
 
     def test_get_all_scores_for_epoch(self, client):
 
-        response = self.app.post(
+        response = client.post(
             "/scores",
             headers=self.auth,
             json=[
@@ -757,38 +819,37 @@ class TestScores:
         )
         assert response.status_code == 200
 
-        response = self.app.get(
+        response = client.get(
             "/scores?epoch=1",
             headers=self.auth,
         )
         assert response.status_code == 200
         assert len(response.json()) == 3
 
-        response = self.app.get(
+        response = client.get(
             "/scores?epoch=2",
             headers=self.auth,
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json() == self.app.get(
+        assert response.json() == client.get(
             "/scores?epoch=previous",
             headers=self.auth,
         ).json()
 
-        response = self.app.get(
+        response = client.get(
             "/scores?epoch=3",
             headers=self.auth,
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json() == self.app.get(
+        assert response.json() == client.get(
             "/scores?epoch=current",
             headers=self.auth,
         ).json()
 
 
 class TestReactions():
-    app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
     @ classmethod
@@ -804,13 +865,13 @@ class TestReactions():
         cls.patcher.stop()
 
     def test_reaction(self, client):
-        response = self.app.get(
+        response = client.get(
             "/reaction?epoch=current&user_id=1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
-        response = self.app.post(
+        response = client.post(
             "/reaction",
             headers=self.auth,
             json={
@@ -822,7 +883,7 @@ class TestReactions():
         )
         assert response.status_code == 200
 
-        response = self.app.get(
+        response = client.get(
             "/reaction?epoch=current&user_id=1",
             headers=self.auth,
         )
@@ -833,7 +894,7 @@ class TestReactions():
         assert response.json()[0]['emoji'] == '🐼'
         assert response.json()[0]['timestamp'] == '2022-04-12T00:00:00'
 
-        response = self.app.get(
+        response = client.get(
             "/reaction?user_id=1",
             headers=self.auth,
         )
@@ -845,21 +906,21 @@ class TestReactions():
         assert response.json()[0]['timestamp'] == '2022-04-12T00:00:00'
 
         # fail when epoch has none
-        response = self.app.get(
+        response = client.get(
             "/reaction?epoch=previous&user_id=1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
         # fail when no events for user
-        response = self.app.get(
+        response = client.get(
             "/reaction?epoch=current&user_id=2",
             headers=self.auth,
         )
         assert response.status_code == 404
 
     def test_delete_reactions(self, client):
-        response = self.app.delete(
+        response = client.delete(
             "/reaction",
             headers=self.auth,
             json={
@@ -870,7 +931,7 @@ class TestReactions():
         )
         assert response.status_code == 404
 
-        response = self.app.post(
+        response = client.post(
             "/reaction",
             headers=self.auth,
             json={
@@ -882,7 +943,7 @@ class TestReactions():
         )
         assert response.status_code == 200
 
-        response = self.app.delete(
+        response = client.delete(
             "/reaction",
             headers=self.auth,
             json={
@@ -899,7 +960,6 @@ class TestReactions():
 
 
 class TestEpoch:
-    app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
     @ classmethod
@@ -915,35 +975,35 @@ class TestEpoch:
         cls.patcher.stop()
 
     def test_negative_epoch_not_found(self, client):
-        response = self.app.get(
+        response = client.get(
             "/scores?epoch=-1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
     def test_incorrect_semantic_epoch_not_found(self, client):
-        response = self.app.get(
+        response = client.get(
             "/scores?epoch=hello",
             headers=self.auth,
         )
         assert response.status_code == 422
 
     def test_extremely_large_epoch_not_found(self, client):
-        response = self.app.get(
+        response = client.get(
             "/scores?epoch=999999999",
             headers=self.auth,
         )
         assert response.status_code == 404
 
     def test_too_early_time_has_no_current(self, client):
-        response = self.app.get(
+        response = client.get(
             "/scores?epoch=current",
             headers=self.auth,
         )
         assert response.status_code == 404
 
     def test_too_early_time_has_no_previous(self, client):
-        response = self.app.get(
+        response = client.get(
             "/scores?epoch=previous",
             headers=self.auth,
         )

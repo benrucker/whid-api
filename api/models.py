@@ -20,6 +20,13 @@ class Message(Base):
     pinned = Column(Boolean, default=False, nullable=False)
 
     attachments = relationship("Attachment")
+    epoch = relationship(
+        "Epoch",
+        primaryjoin="and_(remote(Epoch.start) <= Message.timestamp, Message.timestamp < remote(Epoch.end))",
+        foreign_keys=timestamp,
+        remote_side="Epoch.id",
+        viewonly=True,
+    )
 
 
 class Attachment(Base):

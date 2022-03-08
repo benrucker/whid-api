@@ -16,6 +16,34 @@ def get_message(db: Session, message_id: int):
     return db_msg
 
 
+def get_messages_from_user(db: Session, user_id: int):
+    messages = (
+        db.query(models.Message)
+        .filter(models.Message.author == user_id)
+        .all()
+    )
+    if not messages:
+        raise KeyError()
+    return messages
+
+
+def get_messages_from_user_during_epoch(db: Session, user_id: int, epoch: Epoch | int):
+    epoch = get_epoch(db, epoch)
+    print(datetime.now())
+    print(epoch)
+    messages = (
+        db.query(models.Message)
+        .filter(
+            models.Message.author == user_id,
+            models.Message.epoch == epoch,
+        )
+        .all()
+    )
+    if not messages:
+        raise KeyError()
+    return messages
+
+
 def add_message(db: Session, message: schemas.MessageCreate):
     db_message = models.Message(
         **message.dict(),
