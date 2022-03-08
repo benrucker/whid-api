@@ -7,6 +7,12 @@ from ..main import app
 from .setup import client, session
 
 
+DAY_BEFORE_EPOCH = datetime(2020, 1, 1)
+DAY_IN_FIRST_EPOCH = datetime(2022, 4, 1)
+DAY_IN_SECOND_EPOCH = datetime(2022, 4, 8)
+DAY_IN_THIRD_EPOCH = datetime(2022, 4, 15)
+
+
 class TestMisc:
     app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
@@ -431,6 +437,18 @@ class TestEvents:
     app = TestClient(app)
     auth = {"Authorization": "Bearer hello"}
 
+    @ classmethod
+    def setup_class(cls):
+        patcher = patch('api.crud.datetime')
+        mock_dt = patcher.start()
+        mock_dt.now.return_value = DAY_IN_SECOND_EPOCH
+        mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
+        cls.patcher = patcher
+
+    @ classmethod
+    def teardown_class(cls):
+        cls.patcher.stop()
+
     @pytest.mark.parametrize(
         "event_type", [
             "join",
@@ -452,7 +470,7 @@ class TestEvents:
     )
     def test_voice_event(self, client, event_type):
         response = self.app.get(
-            "/voice_event?since=2020-01-01T00:00:00&user=1",
+            "/voice_event?epoch=current&user=1",
             headers=self.auth,
         )
         assert response.status_code == 404
@@ -464,13 +482,13 @@ class TestEvents:
                 "user_id": 1,
                 "type": event_type,
                 "channel": 1,
-                "timestamp": "2020-01-01T00:00:00",
+                "timestamp": str(DAY_IN_SECOND_EPOCH),
             }
         )
         assert response.status_code == 200
 
         response = self.app.get(
-            "/voice_event?since=2020-01-01T00:00:00&user=1",
+            "/voice_event?epoch=current&user=1",
             headers=self.auth,
         )
         assert response.status_code == 200
@@ -478,18 +496,24 @@ class TestEvents:
         assert response.json()[0]['user_id'] == 1
         assert response.json()[0]['type'] == event_type
         assert response.json()[0]['channel'] == 1
-        assert response.json()[0]['timestamp'] == '2020-01-01T00:00:00'
+        assert datetime.fromisoformat(response.json()[0]['timestamp']) \
+             == DAY_IN_SECOND_EPOCH
 
-        # fail when all events are in past
+        # fail when epoch has no events
         response = self.app.get(
-            "/voice_event?since=2020-01-02T00:00:00&user=1",
+            "/voice_event?epoch=previous&user=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
+        response = self.app.get(
+            "/voice_event?epoch=1&user=1",
             headers=self.auth,
         )
         assert response.status_code == 404
 
         # fail when no events for user
         response = self.app.get(
-            "/voice_event?since=2020-01-01T00:00:00&user=2",
+            "/voice_event?epoch=current&user=2",
             headers=self.auth,
         )
         assert response.status_code == 404
@@ -523,7 +547,7 @@ class TestScores:
     def setup_class(cls):
         patcher = patch('api.crud.datetime')
         mock_dt = patcher.start()
-        mock_dt.now.return_value = datetime(2022, 4, 13)
+        mock_dt.now.return_value = DAY_IN_SECOND_EPOCH
         mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
         cls.patcher = patcher
 
@@ -763,7 +787,7 @@ class TestReactions():
     def setup_class(cls):
         patcher = patch('api.crud.datetime')
         mock_dt = patcher.start()
-        mock_dt.now.return_value = datetime(2022, 4, 13)
+        mock_dt.now.return_value = DAY_IN_SECOND_EPOCH
         mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
         cls.patcher = patcher
 
@@ -863,7 +887,7 @@ class TestEpoch:
     def setup_class(cls):
         patcher = patch('api.crud.datetime')
         mock_dt = patcher.start()
-        mock_dt.now.return_value = datetime(2020, 4, 13)
+        mock_dt.now.return_value = DAY_BEFORE_EPOCH
         mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
         cls.patcher = patcher
 

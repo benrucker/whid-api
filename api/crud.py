@@ -79,16 +79,23 @@ def get_scores(db: Session, epoch: Epoch | int):
 
 
 def get_epoch(db: Session, epoch: Epoch | int):
-    if not isinstance(epoch, int):
-        if epoch is Epoch.CURR:
-            epoch = get_current_epoch(db)
-        elif epoch is Epoch.PREV:
-            epoch = get_previous_epoch(db)
+    epoch = epoch_to_int(db, epoch)
+
     db_epoch = db.query(models.Epoch).filter(models.Epoch.id == epoch).first()
     if not db_epoch:
         raise KeyError(f'No epoch found {epoch}')
     return db_epoch
 
+
+def epoch_to_int(db: Session, epoch: Epoch | int):
+    match epoch:
+        case Epoch.CURR:
+            epoch = get_current_epoch(db)
+        case Epoch.PREV:
+            epoch = get_previous_epoch(db)
+        case int:
+            pass
+    return epoch
 
 def get_current_epoch(db: Session):
     now = datetime.now()
@@ -100,7 +107,7 @@ def get_current_epoch(db: Session):
         ).first()
     )
     if epoch is None:
-        raise KeyError('No current epoch at current time')
+        raise KeyError('No epoch at current time')
     return epoch.id
 
 
@@ -224,6 +231,22 @@ def get_voice_events(db: Session, user_id: int, since: datetime):
     )
     if not events:
         raise KeyError()
+    return events
+
+
+def get_voice_events_during_epoch(db: Session, user_id: int, epoch: Epoch | int):
+    epoch = get_epoch(db, epoch)
+    events = (
+        db.query(models.VoiceEvent)
+        .filter(
+            models.VoiceEvent.user_id == user_id,
+            epoch.start <= models.VoiceEvent.timestamp,
+            models.VoiceEvent.timestamp < epoch.end
+        )
+        .all()
+    )
+    if not events:
+        raise KeyError(f"No voice events found at epoch {epoch}")
     return events
 
 

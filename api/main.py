@@ -202,9 +202,9 @@ def delete_channel(chan_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/voice_event", response_model=list[schemas.VoiceEvent], tags=['Misc Events'])
-def get_voice_events(since: datetime, user: int, db: Session = Depends(get_db)):
+def get_voice_events(user: int, epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
-        return crud.get_voice_events(db, user, since)
+        return crud.get_voice_events_during_epoch(db, user, epoch)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Events not found")
