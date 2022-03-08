@@ -14,6 +14,7 @@ DAY_IN_THIRD_EPOCH = datetime(2022, 4, 8)
 DAY_IN_FOURTH_EPOCH = datetime(2022, 4, 15)
 
 AUTH = {"Authorization": "Bearer hello"}
+AUTH_WRONG = {"Authorization": "Bearer wrong"}
 
 
 class TestMisc:
@@ -1105,3 +1106,25 @@ class TestDuringThirdEpoch:
         )
         assert response.status_code == 200
         assert response.json()['id'] == 3
+
+
+class TestAuth:
+    def test_correct_auth(self, client):
+        response = client.get(
+            "/epoch/current",
+            headers=AUTH,
+        )
+        assert response.status_code not in [403, 401]
+
+    def test_missing_auth(self, client):
+        response = client.get(
+            "/epoch/current",
+        )
+        assert response.status_code == 403
+
+    def test_wrong_auth(self, client):
+        response = client.get(
+            "/epoch/current",
+            headers=AUTH_WRONG,
+        )
+        assert response.status_code == 401
