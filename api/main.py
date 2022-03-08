@@ -64,7 +64,7 @@ def read_messages(user_id: int, epoch: Epoch | int | None = None, db: Session = 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No messages found for user"
-                + f" at epoch {epoch}" if epoch else ""
+            + f" at epoch {epoch}" if epoch else ""
         )
 
 
@@ -234,3 +234,25 @@ def get_voice_events(user: int, epoch: Epoch | int | None = None, db: Session = 
 @app.post("/voice_event", response_model=schemas.VoiceEvent, tags=["Misc Events"])
 def add_voice_event(event: schemas.VoiceEvent, db: Session = Depends(get_db)):
     return crud.add_voice_event(db, event)
+
+
+@app.get("/epoch/all", response_model=list[schemas.Epoch], tags=["Epochs"])
+def get_epochs(db: Session = Depends(get_db)):
+    try:
+        return crud.get_epochs(db)
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No epochs found"
+        )
+
+
+@app.get("/epoch/{epoch}", response_model=schemas.Epoch, tags=["Epochs"])
+def get_epoch(epoch: Epoch | int, db: Session = Depends(get_db)):
+    try:
+        return crud.get_epoch(db, epoch)
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Epoch not found"
+        )

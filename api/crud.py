@@ -106,6 +106,13 @@ def get_scores(db: Session, epoch: Epoch | int):
     return scores
 
 
+def get_epochs(db: Session):
+    epochs = db.query(models.Epoch).all()
+    if not epochs or len(epochs) == 0:
+        raise KeyError()
+    return epochs
+
+
 def get_epoch(db: Session, epoch: Epoch | int):
     epoch = epoch_to_int(db, epoch)
 

@@ -167,3 +167,6 @@ class Epoch(BaseModel):
     id: int
     start: datetime
     end: datetime
+
+    class Config:
+        orm_mode = True
