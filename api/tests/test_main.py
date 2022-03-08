@@ -252,7 +252,7 @@ class TestMessages:
         assert response.status_code == 404
 
 
-class TestMultipleMessages():
+class TestMultipleMessages:
     @ classmethod
     def setup_class(cls):
         patcher = patch('api.crud.datetime')
@@ -430,7 +430,7 @@ class TestChannels:
         assert response.status_code == 404
 
 
-class TestUsers():
+class TestUsers:
     def test_user(self, client):
         response = client.get(
             "/user/1",
@@ -850,7 +850,7 @@ class TestScores:
         ).json()
 
 
-class TestReactions():
+class TestReactions:
     @ classmethod
     def setup_class(cls):
         patcher = patch('api.crud.datetime')
