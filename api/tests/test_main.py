@@ -1107,6 +1107,14 @@ class TestDuringThirdEpoch:
         assert response.status_code == 200
         assert response.json()['id'] == 3
 
+    def test_get_all_epochs(self, client):
+        response = client.get(
+            "/epoch/all",
+            headers=AUTH,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 4
+
 
 class TestAuth:
     def test_correct_auth(self, client):
