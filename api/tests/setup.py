@@ -14,7 +14,7 @@ from ..main import app, get_db, token
 from ..settings import get_settings
 
 
-SQLALCHEMY_DATABASE_URL = get_settings().db_url
+SQLALCHEMY_DATABASE_URL = "sqlite:///./testdb.db"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
