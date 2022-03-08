@@ -309,16 +309,28 @@ class TestMultipleMessages():
         assert response.status_code == 200
 
         response = client.get(
+            "/message?user_id=1",
+            headers=self.auth,
+        )
+        assert response.status_code == 200
+
+        response = client.get(
             "/message?user_id=1&epoch=current",
             headers=self.auth,
         )
         assert response.status_code == 200
 
         response = client.get(
-            "/message?user_id=1",
+            "/message?user_id=2&epoch=current",
             headers=self.auth,
         )
         assert response.status_code == 200
+
+        response = client.get(
+            "/message?user_id=2&epoch=previous",
+            headers=self.auth,
+        )
+        assert response.status_code == 404
 
 
 class TestChannels:
