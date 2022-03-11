@@ -70,6 +70,13 @@ def delete_message(db: Session, message_id: int):
     return db_message
 
 
+def get_all_users(db: Session):
+    users = db.query(models.User).all()
+    if not users:
+        raise KeyError()
+    return users
+
+
 def get_user(db: Session, user_id: int):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user is None:

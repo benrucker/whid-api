@@ -527,7 +527,7 @@ class TestChannels:
 
 
 class TestUsers:
-    def test_user(self, client):
+    def test_one_user(self, client):
         response = client.get(
             "/user/1",
             headers=AUTH,
@@ -597,6 +597,39 @@ class TestUsers:
         assert response.json()['nickname'] == 'new nickname'
         assert response.json()['numbers'] == 8098
 
+    def test_multiple_users(self, client):
+        response = client.get(
+            "/user",
+            headers=AUTH,
+        )
+        assert response.status_code == 404
+        
+        response = client.put(
+            "/user/1",
+            headers=AUTH,
+            json={
+                "id": 1,
+                "username": "test",
+                "nickname": "testname",
+                "numbers": 8098,
+            }
+        )
+        response = client.put(
+            "/user/2",
+            headers=AUTH,
+            json={
+                "id": 2,
+                "username": "test",
+                "nickname": "testname",
+                "numbers": 8098,
+            }
+        )
+        response = client.get(
+            "/user",
+            headers=AUTH,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 2
 
 class TestEvents:
     @ classmethod

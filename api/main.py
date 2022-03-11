@@ -116,6 +116,16 @@ def pin_message(msg_id, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
 
+@app.get("/user", response_model=list[schemas.User], tags=['Users'])
+def get_all_users(db: Session = Depends(get_db)):
+    try:
+        return crud.get_all_users(db)
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No users found"
+        )
+
+
 @app.get("/user/{user_id}", response_model=schemas.UserBase, tags=["Users"])
 def get_user(user_id: int, db: Session = Depends(get_db)):
     try:
