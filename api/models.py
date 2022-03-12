@@ -20,6 +20,7 @@ class Message(Base):
     deleted_timestamp = Column(DateTime)
     pinned = Column(Boolean, default=False, nullable=False)
 
+    mentions = relationship("Mention", primaryjoin="Mention.msg_id == Message.id")
     attachments = relationship("Attachment")
     epoch = relationship(
         "Epoch",
@@ -28,6 +29,14 @@ class Message(Base):
         remote_side="Epoch.id",
         viewonly=True,
     )
+
+
+class Mention(Base):
+    __tablename__ = "mention"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    msg_id = Column(String, ForeignKey("message.id"), nullable=False)
+    mention = Column(String, nullable=False)
 
 
 class Attachment(Base):

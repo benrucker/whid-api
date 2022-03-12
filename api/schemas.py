@@ -13,6 +13,14 @@ class AttachmentCreate(AttachmentBase):
     pass
 
 
+class Mention(BaseModel):
+    msg_id: str
+    mention: str
+
+    class Config:
+        orm_mode = True
+
+
 class Attachment(AttachmentBase):
     class Config:
         orm_mode = True
@@ -26,6 +34,7 @@ class MessageBase(BaseModel):
     author: str
     replying_to: str | None = None
     channel: str
+    mentions: list[Mention] | None = None
     edited: bool = False
     edited_timestamp: datetime | None = None
     deleted: bool = False
@@ -44,6 +53,7 @@ class Message(MessageBase):
 
 class MessageUpdate(BaseModel):
     content: str | None
+    mentions: list[Mention] | None
     edited: bool | None = True
     edited_timestamp: datetime | None
     deleted: bool | None

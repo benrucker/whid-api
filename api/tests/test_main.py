@@ -428,6 +428,36 @@ class TestMultipleMessages:
         assert response.status_code == 404
 
 
+class TestMessageMentions:
+    def test_message_has_mentions(self, client):
+        response = client.put(
+            "/message/1",
+            headers=AUTH,
+            json={
+                "id": '1',
+                "timestamp": "2020-01-01T00:00:00",
+                "content": "hello @userwithIDofTwo and @three",
+                "author": '1',
+                "channel": '1',
+                "mentions": [
+                    {'msg_id': '1', 'mention': '2'},
+                    {'msg_id': '1', 'mention': '3'},
+                ],
+            },
+        )
+        assert response.status_code == 200
+
+        response = client.get(
+            "/message/1",
+            headers=AUTH,
+        )
+        assert response.status_code == 200
+        assert response.json()['mentions'] == [
+            {'msg_id': '1', 'mention': '2'},
+            {'msg_id': '1', 'mention': '3'}
+        ]
+
+
 class TestChannels:
     def test_channel(self, client):
         response = client.get(
@@ -605,7 +635,7 @@ class TestUsers:
             headers=AUTH,
         )
         assert response.status_code == 404
-        
+
         response = client.put(
             "/user/1",
             headers=AUTH,
