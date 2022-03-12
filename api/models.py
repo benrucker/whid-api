@@ -63,7 +63,7 @@ class Channel(Base):
 
     id = Column(String, primary_key=True, index=True, nullable=False)
     name = Column(String, nullable=False)
-    category = Column(String, nullable=False)
+    category = Column(String)
     thread = Column(Boolean, default=False, nullable=False)
 
     messages = relationship("Message")

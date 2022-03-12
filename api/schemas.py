@@ -97,7 +97,7 @@ class Reaction(ReactionBase):
 class ChannelBase(BaseModel):
     id: str
     name: str
-    category: str
+    category: str | None = None
     thread: bool = False
 
     class Config:
