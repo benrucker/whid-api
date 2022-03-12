@@ -17,6 +17,7 @@ class Message(Base):
     edited = Column(Boolean)
     edited_timestamp = Column(DateTime)
     deleted = Column(Boolean, default=False, nullable=False)
+    deleted_timestamp = Column(DateTime)
     pinned = Column(Boolean, default=False, nullable=False)
 
     attachments = relationship("Attachment")

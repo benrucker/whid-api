@@ -29,6 +29,7 @@ class MessageBase(BaseModel):
     edited: bool = False
     edited_timestamp: datetime | None = None
     deleted: bool = False
+    deleted_timestamp: datetime | None = None
     pinned: bool = False
 
 
@@ -46,6 +47,7 @@ class MessageUpdate(BaseModel):
     edited: bool | None = True
     edited_timestamp: datetime | None
     deleted: bool | None
+    deleted_timestamp: datetime | None
     pinned: bool | None
 
     class Config:

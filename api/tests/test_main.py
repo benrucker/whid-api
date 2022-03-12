@@ -170,10 +170,12 @@ class TestMessages:
             headers=AUTH,
             json={
                 "deleted": True,
+                "deleted_timestamp": "2020-01-01T00:00:00",
             },
         )
         assert response.status_code == 200
         assert response.json()['deleted'] == True
+        assert response.json()['deleted_timestamp'] == '2020-01-01T00:00:00'
 
     def test_malformed_attachment_fails_to_create(self, client):
         response = client.put(
