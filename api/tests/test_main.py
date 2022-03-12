@@ -53,11 +53,11 @@ class TestMessages:
             headers=AUTH,
         )
         assert response.status_code == 200
-        assert response.json()['id'] == 1
+        assert response.json()['id'] == '1'
         assert response.json()['timestamp'] == "2020-01-01T00:00:00"
         assert response.json()['content'] == 'hello'
-        assert response.json()['author'] == 1
-        assert response.json()['channel'] == 1
+        assert response.json()['author'] == '1'
+        assert response.json()['channel'] == '1'
         assert response.json()['edited'] == False
         assert response.json()['edited_timestamp'] == None
         assert response.json()['deleted'] == False
@@ -98,22 +98,22 @@ class TestMessages:
             headers=AUTH,
         )
         assert response.status_code == 200
-        assert response.json()['id'] == 1
+        assert response.json()['id'] == '1'
         assert response.json()['timestamp'] == "2020-01-01T00:00:00"
         assert response.json()['content'] == 'hello'
-        assert response.json()['author'] == 1
-        assert response.json()['channel'] == 1
+        assert response.json()['author'] == '1'
+        assert response.json()['channel'] == '1'
         assert response.json()['edited'] == False
         assert response.json()['edited_timestamp'] == None
         assert response.json()['deleted'] == False
         assert response.json()['pinned'] == False
         assert response.json()['attachments'] == [
             {
-                "msg_id": 1,
+                "msg_id": '1',
                 "url": "https://example.com/image.png",
             },
             {
-                "msg_id": 1,
+                "msg_id": '1',
                 "url": "https://example.com/image2.png",
             },
         ]
@@ -451,7 +451,7 @@ class TestChannels:
             headers=AUTH,
         )
         assert response.status_code == 200
-        assert response.json()['id'] == 1
+        assert response.json()['id'] == '1'
         assert response.json()['name'] == 'channel'
         assert response.json()['category'] == 'general'
         assert response.json()['thread'] == False
@@ -551,10 +551,10 @@ class TestUsers:
             headers=AUTH,
         )
         assert response.status_code == 200
-        assert response.json()['id'] == 1
+        assert response.json()['id'] == '1'
         assert response.json()['username'] == 'test'
         assert response.json()['nickname'] == 'testname'
-        assert response.json()['numbers'] == 8098
+        assert response.json()['numbers'] == '8098'
 
     def test_update_nonexistant_user(self, client):
         response = client.patch(
@@ -582,7 +582,7 @@ class TestUsers:
         assert response.json()['nickname'] == 'testname'
         assert response.json()['username'] != 'new username'
         assert response.json()['nickname'] != 'new nickname'
-        assert response.json()['numbers'] == 8098
+        assert response.json()['numbers'] == '8098'
 
         response = client.patch(
             "/user/1",
@@ -595,7 +595,7 @@ class TestUsers:
         assert response.status_code == 200
         assert response.json()['username'] == 'new username'
         assert response.json()['nickname'] == 'new nickname'
-        assert response.json()['numbers'] == 8098
+        assert response.json()['numbers'] == '8098'
 
     def test_multiple_users(self, client):
         response = client.get(
@@ -630,6 +630,7 @@ class TestUsers:
         )
         assert response.status_code == 200
         assert len(response.json()) == 2
+
 
 class TestEvents:
     @ classmethod
@@ -688,9 +689,9 @@ class TestEvents:
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json()[0]['user_id'] == 1
+        assert response.json()[0]['user_id'] == '1'
         assert response.json()[0]['type'] == event_type
-        assert response.json()[0]['channel'] == 1
+        assert response.json()[0]['channel'] == '1'
         assert datetime.fromisoformat(response.json()[0]['timestamp']) \
             == DAY_IN_THIRD_EPOCH
 
@@ -700,7 +701,7 @@ class TestEvents:
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json()[0]['user_id'] == 1
+        assert response.json()[0]['user_id'] == '1'
 
         # fail when epoch has no events
         response = client.get(
@@ -838,7 +839,7 @@ class TestScores:
             headers=AUTH,
         )
         assert response.status_code == 200
-        assert response.json()['user_id'] == 1
+        assert response.json()['user_id'] == '1'
         assert response.json()['score'] == 2
 
     def test_epoch_semantics(self, client):
@@ -887,7 +888,7 @@ class TestScores:
             headers=AUTH,
         )
         assert response.status_code == 200
-        assert response.json()['user_id'] == 1
+        assert response.json()['user_id'] == '1'
         assert response.json()['score'] == 8
         assert response.json() == client.get(
             "/score?epoch=3&user_id=1",
@@ -899,7 +900,7 @@ class TestScores:
             headers=AUTH,
         )
         assert response.status_code == 200
-        assert response.json()['user_id'] == 1
+        assert response.json()['user_id'] == '1'
         assert response.json()['score'] == 4
         assert response.json() == client.get(
             "/score?epoch=2&user_id=1",
@@ -911,7 +912,7 @@ class TestScores:
             headers=AUTH,
         )
         assert response.status_code == 200
-        assert response.json()['user_id'] == 1
+        assert response.json()['user_id'] == '1'
         assert response.json()['score'] == 2
 
     def test_get_all_scores_for_epoch(self, client):
@@ -1017,8 +1018,8 @@ class TestReactions:
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json()[0]['user_id'] == 1
-        assert response.json()[0]['msg_id'] == 1
+        assert response.json()[0]['user_id'] == '1'
+        assert response.json()[0]['msg_id'] == '1'
         assert response.json()[0]['emoji'] == '🐼'
         assert response.json()[0]['timestamp'] == '2022-04-12T00:00:00'
 
@@ -1028,8 +1029,8 @@ class TestReactions:
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json()[0]['user_id'] == 1
-        assert response.json()[0]['msg_id'] == 1
+        assert response.json()[0]['user_id'] == '1'
+        assert response.json()[0]['msg_id'] == '1'
         assert response.json()[0]['emoji'] == '🐼'
         assert response.json()[0]['timestamp'] == '2022-04-12T00:00:00'
 
@@ -1081,8 +1082,8 @@ class TestReactions:
             }
         )
         assert response.status_code == 200
-        assert response.json()['msg_id'] == 1
-        assert response.json()['user_id'] == 1
+        assert response.json()['msg_id'] == '1'
+        assert response.json()['user_id'] == '1'
         assert response.json()['emoji'] == '🐼'
         assert response.json()['timestamp'] == '2022-04-12T00:00:00'
 

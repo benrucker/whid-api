@@ -54,7 +54,7 @@ def read_root():
 
 
 @app.get("/message", response_model=list[schemas.Message], tags=['Messages'])
-def read_messages(user_id: int, epoch: Epoch | int | None = None, db: Session = Depends(get_db)):
+def read_messages(user_id: str, epoch: Epoch | int | None = None, db: Session = Depends(get_db)):
     try:
         if epoch is None:
             return crud.get_messages_from_user(db, user_id)
@@ -69,7 +69,7 @@ def read_messages(user_id: int, epoch: Epoch | int | None = None, db: Session = 
 
 
 @app.get("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
-def read_message(msg_id: int, db: Session = Depends(get_db)):
+def read_message(msg_id: str, db: Session = Depends(get_db)):
     try:
         return crud.get_message(db, msg_id)
     except KeyError:
@@ -78,7 +78,7 @@ def read_message(msg_id: int, db: Session = Depends(get_db)):
 
 
 @app.put("/message/{msg_id}", response_model=schemas.MessageOnCreate, tags=['Messages'])
-def add_message(msg_id: int, message: schemas.MessageCreate, db: Session = Depends(get_db)):
+def add_message(msg_id: str, message: schemas.MessageCreate, db: Session = Depends(get_db)):
     db_msg = crud.add_message(db, message)
 
     try: crud.get_user(db, message.author)
@@ -90,7 +90,7 @@ def add_message(msg_id: int, message: schemas.MessageCreate, db: Session = Depen
 
 
 @app.patch("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
-def update_message(msg_id: int, message: schemas.MessageUpdate, db: Session = Depends(get_db)):
+def update_message(msg_id: str, message: schemas.MessageUpdate, db: Session = Depends(get_db)):
     try:
         return crud.update_message(db, msg_id, message.dict(exclude_unset=True))
     except KeyError:
@@ -99,7 +99,7 @@ def update_message(msg_id: int, message: schemas.MessageUpdate, db: Session = De
 
 
 @app.delete("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
-def delete_message(msg_id: int, db: Session = Depends(get_db)):
+def delete_message(msg_id: str, db: Session = Depends(get_db)):
     try:
         return crud.delete_message(db, msg_id)
     except KeyError:
@@ -127,7 +127,7 @@ def get_all_users(db: Session = Depends(get_db)):
 
 
 @app.get("/user/{user_id}", response_model=schemas.UserBase, tags=["Users"])
-def get_user(user_id: int, db: Session = Depends(get_db)):
+def get_user(user_id: str, db: Session = Depends(get_db)):
     try:
         return crud.get_user(db, user_id)
     except KeyError:
@@ -136,12 +136,12 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @app.put("/user/{user_id}", response_model=schemas.User, tags=["Users"])
-def add_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_db)):
+def add_user(user_id: str, user: schemas.UserCreate, db: Session = Depends(get_db)):
     return crud.add_user(db, user)
 
 
 @app.patch("/user/{user_id}", response_model=schemas.User, tags=["Users"])
-def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(get_db)):
+def update_user(user_id: str, data: schemas.UserUpdate, db: Session = Depends(get_db)):
     try:
         return crud.update_user(db, user_id, data.dict(exclude_unset=True))
     except KeyError:
@@ -159,7 +159,7 @@ def get_scores(epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
 
 
 @app.get("/score", response_model=schemas.Score, tags=["Scores"])
-def get_score(user_id: int, epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
+def get_score(user_id: str, epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
         return crud.get_score(db, user_id, epoch)
     except KeyError:
@@ -179,7 +179,7 @@ def add_reaction(reaction: schemas.Reaction, db: Session = Depends(get_db)):
 
 
 @app.get("/reaction", response_model=list[schemas.Reaction], tags=['Reactions'])
-def get_reactions(user_id: int, epoch: Epoch | int | None = None, db: Session = Depends(get_db)):
+def get_reactions(user_id: str, epoch: Epoch | int | None = None, db: Session = Depends(get_db)):
     try:
         if epoch:
             return crud.get_reactions_from_user_at_epoch(db, user_id, epoch)
@@ -203,12 +203,12 @@ def delete_reaction(reaction: schemas.ReactionDelete, db: Session = Depends(get_
 
 
 @app.put("/channel/{chan_id}", response_model=schemas.Channel, tags=['Channels'])
-def add_channel(chan_id: int, channel: schemas.ChannelCreate, db: Session = Depends(get_db)):
+def add_channel(chan_id: str, channel: schemas.ChannelCreate, db: Session = Depends(get_db)):
     return crud.add_channel(db, channel)
 
 
 @app.get("/channel/{chan_id}", response_model=schemas.Channel, tags=['Channels'])
-def get_channel(chan_id: int, db: Session = Depends(get_db)):
+def get_channel(chan_id: str, db: Session = Depends(get_db)):
     try:
         return crud.get_channel(db, chan_id)
     except KeyError:
@@ -217,7 +217,7 @@ def get_channel(chan_id: int, db: Session = Depends(get_db)):
 
 
 @app.patch("/channel/{chan_id}", response_model=schemas.Channel, tags=['Channels'])
-def update_channel(chan_id: int, channel: schemas.ChannelUpdate, db: Session = Depends(get_db)):
+def update_channel(chan_id: str, channel: schemas.ChannelUpdate, db: Session = Depends(get_db)):
     try:
         return crud.update_channel(
             db, chan_id, channel.dict(exclude_unset=True)
@@ -228,7 +228,7 @@ def update_channel(chan_id: int, channel: schemas.ChannelUpdate, db: Session = D
 
 
 @app.delete("/channel/{chan_id}", response_model=schemas.Channel, tags=['Channels'])
-def delete_channel(chan_id: int, db: Session = Depends(get_db)):
+def delete_channel(chan_id: str, db: Session = Depends(get_db)):
     try:
         return crud.delete_channel(db, chan_id)
     except KeyError:
@@ -237,7 +237,7 @@ def delete_channel(chan_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/voice_event", response_model=list[schemas.VoiceEvent], tags=['Misc Events'])
-def get_voice_events(user: int, epoch: Epoch | int | None = None, db: Session = Depends(get_db)):
+def get_voice_events(user: str, epoch: Epoch | int | None = None, db: Session = Depends(get_db)):
     try:
         if epoch:
             return crud.get_voice_events_during_epoch(db, user, epoch)

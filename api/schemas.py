@@ -5,7 +5,7 @@ from .enums import VoiceEventType
 
 
 class AttachmentBase(BaseModel):
-    msg_id: int
+    msg_id: str
     url: HttpUrl
 
 
@@ -19,13 +19,13 @@ class Attachment(AttachmentBase):
 
 
 class MessageBase(BaseModel):
-    id: int
+    id: str
     timestamp: datetime
     content: str
     attachments: list[Attachment] | None = None
-    author: int
-    replying_to: int | None = None
-    channel: int
+    author: str
+    replying_to: str | None = None
+    channel: str
     edited: bool = False
     edited_timestamp: datetime | None = None
     deleted: bool = False
@@ -61,15 +61,15 @@ class MessageOnCreate(MessageBase):
 
 
 class ReactionBase(BaseModel):
-    user_id: int
-    msg_id: int
+    user_id: str
+    msg_id: str
     emoji: str
     timestamp: datetime
 
 
 class ReactionDelete(BaseModel):
-    user_id: int
-    msg_id: int
+    user_id: str
+    msg_id: str
     emoji: str
 
 
@@ -83,7 +83,7 @@ class Reaction(ReactionBase):
 
 
 class ChannelBase(BaseModel):
-    id: int
+    id: str
     name: str
     category: str
     thread: bool = False
@@ -109,9 +109,9 @@ class ChannelUpdate(BaseModel):
 
 
 class VoiceEventBase(BaseModel):
-    user_id: int
+    user_id: str
     type: VoiceEventType
-    channel: int
+    channel: str
     timestamp: datetime
 
     class Config:
@@ -128,7 +128,7 @@ class VoiceEvent(VoiceEventBase):
 
 class ScoreBase(BaseModel):
     epoch: int
-    user_id: int
+    user_id: str
     score: int
 
 
@@ -144,10 +144,10 @@ class Score(ScoreBase):
 
 
 class UserBase(BaseModel):
-    id: int
+    id: str
     username: str
     nickname: str | None = None
-    numbers: int
+    numbers: str
 
     class Config:
         orm_mode = True
@@ -160,7 +160,7 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     username: str | None
     nickname: str | None
-    numbers: int | None
+    numbers: str | None
 
     class Config:
         orm_mode = True
