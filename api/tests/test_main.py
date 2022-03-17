@@ -436,12 +436,14 @@ class TestMessageMentions:
             json={
                 "id": '1',
                 "timestamp": "2020-01-01T00:00:00",
-                "content": "hello @userwithIDofTwo and @three",
+                "content": "hello @userwithIDofTwo and @three and also @everyone and especially @league",
                 "author": '1',
                 "channel": '1',
                 "mentions": [
-                    {'msg_id': '1', 'mention': '2'},
-                    {'msg_id': '1', 'mention': '3'},
+                    {'msg_id': '1', 'mention': '2', 'type': 'user'},
+                    {'msg_id': '1', 'mention': '3', 'type': 'user'},
+                    {'msg_id': '1', 'mention': 'everyone', 'type': 'role'},
+                    {'msg_id': '1', 'mention': 'league', 'type': 'role'},
                 ],
             },
         )
@@ -453,8 +455,10 @@ class TestMessageMentions:
         )
         assert response.status_code == 200
         assert response.json()['mentions'] == [
-            {'msg_id': '1', 'mention': '2'},
-            {'msg_id': '1', 'mention': '3'}
+            {'msg_id': '1', 'mention': '2', 'type': 'user'},
+            {'msg_id': '1', 'mention': '3', 'type': 'user'},
+            {'msg_id': '1', 'mention': 'everyone', 'type': 'role'},
+            {'msg_id': '1', 'mention': 'league', 'type': 'role'},
         ]
 
 

@@ -37,6 +37,7 @@ class Mention(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     msg_id = Column(String, ForeignKey("message.id"), nullable=False)
     mention = Column(String, nullable=False)
+    type = Column(String, nullable=False)
 
 
 class Attachment(Base):

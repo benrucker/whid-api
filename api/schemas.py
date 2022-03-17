@@ -16,6 +16,7 @@ class AttachmentCreate(AttachmentBase):
 class Mention(BaseModel):
     msg_id: str
     mention: str
+    type: str
 
     class Config:
         orm_mode = True
