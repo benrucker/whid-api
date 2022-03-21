@@ -395,7 +395,6 @@ class TestMessagesExistanceResponses:
             },
         )
         assert response.status_code == 200
-        assert response.json()['channel_exists'] == True
 
 
 class TestMultipleMessages:

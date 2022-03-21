@@ -77,7 +77,7 @@ def read_message(msg_id: str, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
 
-@app.put("/message/{msg_id}", response_model=schemas.MessageOnCreate | dict, tags=['Messages'])
+@app.put("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
 def add_message(msg_id: str, message: schemas.MessageCreate, db: Session = Depends(get_db)):
     missing_users, missing_channels = get_missing_fields(message, db)
 

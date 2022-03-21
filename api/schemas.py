@@ -65,14 +65,6 @@ class MessageUpdate(BaseModel):
         orm_mode = True
 
 
-class MessageOnCreate(MessageBase):
-    user_exists: bool = True
-    channel_exists: bool = True
-
-    class Config:
-        orm_mode = True
-
-
 class ReactionBase(BaseModel):
     user_id: str
     msg_id: str
