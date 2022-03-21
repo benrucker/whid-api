@@ -119,20 +119,22 @@ def get_missing_fields(message, db):
                     )
                 )
             )
+    if message.replying_to:
+        members.append(message.replying_to)
 
-    missing_members = []
+    missing_members = set()
     for member in members:
         try:
             crud.get_member(db, member)
         except KeyError:
-            missing_members.append(member)
+            missing_members.add(member)
 
-    missing_channels = []
+    missing_channels = set()
     try:
         crud.get_channel(db, message.channel)
     except KeyError:
-        missing_channels.append(message.channel)
-    return missing_members, missing_channels
+        missing_channels.add(message.channel)
+    return list(missing_members), list(missing_channels)
 
 
 @app.patch("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])

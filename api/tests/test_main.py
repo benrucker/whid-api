@@ -320,7 +320,46 @@ class TestMessagesExistanceResponses:
             },
         )
         assert response.status_code == 424
-        assert response.json()['missing_members'] == ["1", "2"]
+        assert set(response.json()['missing_members']) == {"1", "2"}
+        assert response.json()['missing_channels'] == ["1"]
+
+    def test_put_message_without_member_or_channel_that_replies(self, client):
+        response = client.put(
+            "/message/1",
+            headers=AUTH,
+            json={
+                "id": 1,
+                "timestamp": "2020-01-01T00:00:00",
+                "content": "hello fops this is a reply",
+                "author": 1,
+                "channel": 1,
+                "mentions": [{
+                    "msg_id": "1",
+                    "mention": "2",
+                    "type": "member",
+                }],
+                "replying_to": "2"
+            },
+        )
+        assert response.status_code == 424
+        assert set(response.json()['missing_members']) == {"1", "2"}
+        assert response.json()['missing_channels'] == ["1"]
+
+    def test_put_message_without_member_or_channel_that_replies_without_mention(self, client):
+        response = client.put(
+            "/message/1",
+            headers=AUTH,
+            json={
+                "id": 1,
+                "timestamp": "2020-01-01T00:00:00",
+                "content": "hello fops this is a reply",
+                "author": 1,
+                "channel": 1,
+                "replying_to": "2"
+            },
+        )
+        assert response.status_code == 424
+        assert set(response.json()['missing_members']) == {"1", "2"}
         assert response.json()['missing_channels'] == ["1"]
 
     def test_put_message_with_member(self, client):
