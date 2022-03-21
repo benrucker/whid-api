@@ -5,3 +5,6 @@ sqlalchemy
 pytest
 requests
 pytest-cov
+alembic
+wheel
+psycopg2-binary
