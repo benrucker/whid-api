@@ -87,6 +87,7 @@ class Member(Base):
     username = Column(String, nullable=False)
     nickname = Column(String)
     numbers = Column(String(4), nullable=False)
+    bot = Column(Boolean, nullable=False, default=False)
 
     messages = relationship("Message", foreign_keys=[Message.author])
     scores = relationship("Score")

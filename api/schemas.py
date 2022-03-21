@@ -162,6 +162,7 @@ class MemberBase(BaseModel):
     username: str
     nickname: str | None = None
     numbers: str
+    bot: bool = False
 
     class Config:
         orm_mode = True

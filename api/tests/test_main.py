@@ -653,7 +653,7 @@ class TestChannels:
         assert response.status_code == 404
 
 
-class Testmembers:
+class TestMembers:
     def test_one_member(self, client):
         response = client.get(
             "/member/1",
@@ -682,6 +682,7 @@ class Testmembers:
         assert response.json()['username'] == 'test'
         assert response.json()['nickname'] == 'testname'
         assert response.json()['numbers'] == '8098'
+        assert response.json()['bot'] == False
 
     def test_update_nonexistant_member(self, client):
         response = client.patch(
@@ -757,6 +758,39 @@ class Testmembers:
         )
         assert response.status_code == 200
         assert len(response.json()) == 2
+
+
+class TestBotMembers:
+    def test_one_member(self, client):
+        response = client.get(
+            "/member/1",
+            headers=AUTH,
+        )
+        assert response.status_code == 404
+
+        response = client.put(
+            "/member/1",
+            headers=AUTH,
+            json={
+                "id": 1,
+                "username": "testbot",
+                "nickname": "testname",
+                "numbers": 8098,
+                "bot": True,
+            }
+        )
+        assert response.status_code == 200
+
+        response = client.get(
+            "/member/1",
+            headers=AUTH,
+        )
+        assert response.status_code == 200
+        assert response.json()['id'] == '1'
+        assert response.json()['username'] == 'testbot'
+        assert response.json()['nickname'] == 'testname'
+        assert response.json()['numbers'] == '8098'
+        assert response.json()['bot'] == True
 
 
 class TestEvents:
