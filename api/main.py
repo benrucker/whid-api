@@ -77,16 +77,49 @@ def read_message(msg_id: str, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
 
-@app.put("/message/{msg_id}", response_model=schemas.MessageOnCreate, tags=['Messages'])
+@app.put("/message/{msg_id}", response_model=schemas.MessageOnCreate | dict, tags=['Messages'])
 def add_message(msg_id: str, message: schemas.MessageCreate, db: Session = Depends(get_db)):
-    db_msg = crud.add_message(db, message)
+    missing_users, missing_channels = get_missing_fields(message, db)
 
-    try: crud.get_user(db, message.author)
-    except KeyError: db_msg.user_exists = False
-    try: crud.get_channel(db, message.channel)
-    except KeyError: db_msg.channel_exists = False
-    
+    if missing_users or missing_channels:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "missing_users": missing_users,
+                "missing_channels": missing_channels,
+            }
+        )
+
+    db_msg = crud.add_message(db, message)
     return db_msg
+
+
+def get_missing_fields(message, db):
+    if message.mentions:
+        users = [message.author] + \
+            list(
+                map(
+                    lambda x: x.mention, filter(
+                        lambda x: x.type == "user", message.mentions
+                    )
+                )
+            )
+    else:
+        users = []
+
+    missing_users = []
+    for user in users:
+        try:
+            crud.get_user(db, user)
+        except KeyError:
+            missing_users.append(user)
+
+    missing_channels = []
+    try:
+        crud.get_channel(db, message.channel)
+    except KeyError:
+        missing_channels.append(message.channel)
+    return missing_users, missing_channels
 
 
 @app.patch("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])

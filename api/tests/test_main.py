@@ -27,6 +27,31 @@ class TestMisc:
         assert response.json() == {"Hello": "World"}
 
 
+def add_a_channel_and_user(client):
+    response = client.put(
+        "/user/1",
+        headers=AUTH,
+        json={
+            "id": 1,
+            "username": "test",
+            "nickname": "test",
+            "numbers": "1234",
+        },
+    )
+    assert response.status_code == 200
+    response = client.put(
+        "/channel/1",
+        headers=AUTH,
+        json={
+            "id": 1,
+            "name": "test",
+            "category": "test",
+            "thread": False,
+        },
+    )
+    assert response.status_code == 200
+
+
 class TestMessages:
     def test_message(self, client):
         response = client.get(
@@ -34,6 +59,8 @@ class TestMessages:
             headers=AUTH,
         )
         assert response.status_code == 404
+
+        add_a_channel_and_user(client)
 
         response = client.put(
             "/message/1",
@@ -69,6 +96,7 @@ class TestMessages:
             headers=AUTH,
         )
         assert response.status_code == 404
+        add_a_channel_and_user(client)
 
         response = client.put(
             "/message/1",
@@ -131,6 +159,7 @@ class TestMessages:
         assert response.status_code == 404
 
     def test_update_message(self, client):
+        add_a_channel_and_user(client)
         response = client.put(
             "/message/1",
             headers=AUTH,
@@ -229,6 +258,7 @@ class TestMessages:
         assert response.status_code == 404
 
     def test_delete_message(self, client):
+        add_a_channel_and_user(client)
         response = client.put(
             "/message/1",
             headers=AUTH,
@@ -257,29 +287,68 @@ class TestMessages:
 
 class TestMessagesExistanceResponses:
     def test_put_message_without_user_or_channel(self, client):
+        # add_a_channel_and_user(client)
+
+        # response = client.put(
+        #     "/user/2",
+        #     headers=AUTH,
+        #     json={
+        #         "id": 2,
+        #         "username": "user2",
+        #         "nickname": "user2",
+        #         "numbers": "4321",
+        #     }
+        # )
+
         response = client.put(
             "/message/1",
             headers=AUTH,
             json={
                 "id": 1,
                 "timestamp": "2020-01-01T00:00:00",
-                "content": "hello",
+                "content": "hello @fops",
                 "author": 1,
                 "channel": 1,
+                "mentions": [{
+                    "msg_id": "1",
+                    "mention": "2",
+                    "type": "user",
+                }],
             },
         )
-        assert response.status_code == 200
-        assert response.json()['user_exists'] == False
-        assert response.json()['channel_exists'] == False
+        assert response.status_code == 400
+        assert response.json()['detail']['missing_users'] == ["1", "2"]
+        assert response.json()['detail']['missing_channels'] == ["1"]
 
     def test_put_message_with_user(self, client):
+        add_a_channel_and_user(client)
+
+        response = client.put(
+            "/message/1",
+            headers=AUTH,
+            json={
+                "id": 1,
+                "timestamp": "2020-01-01T00:00:00",
+                "content": "hello @fops",
+                "author": 1,
+                "channel": 1,
+                "mentions": [{
+                    "msg_id": "1",
+                    "mention": "2",
+                    "type": "user",
+                }],
+            },
+        )
+        assert response.status_code == 400
+        assert response.json()['detail']['missing_users'] == ["2"]
+
         response = client.put(
             "/user/1",
             headers=AUTH,
             json={
-                "id": 1,
-                "username": "test",
-                "numbers": 5555,
+                "id": 2,
+                "username": "fops",
+                "numbers": 8098,
             },
         )
         assert response.status_code == 200
@@ -290,13 +359,17 @@ class TestMessagesExistanceResponses:
             json={
                 "id": 1,
                 "timestamp": "2020-01-01T00:00:00",
-                "content": "hello",
+                "content": "hello @fops",
                 "author": 1,
                 "channel": 1,
+                "mentions": [{
+                    "msg_id": "1",
+                    "mention": "2",
+                    "type": "user",
+                }],
             },
         )
         assert response.status_code == 200
-        assert response.json()['user_exists'] == True
 
     def test_put_message_with_channel(self, client):
         response = client.put(
@@ -364,6 +437,8 @@ class TestMultipleMessages:
         assert response.status_code == 404
 
     def test_get_multiple_messages_at_epoch(self, client):
+        add_a_channel_and_user(client)
+        
         response = client.put(
             "/message/1",
             headers=AUTH,
@@ -430,6 +505,17 @@ class TestMultipleMessages:
 
 class TestMessageMentions:
     def test_message_has_mentions(self, client):
+        add_a_channel_and_user(client)
+
+        response = client.put(
+            "/user/2", headers=AUTH,
+            json={"id": 2,"username": "fops","numbers": 8098,},
+        )
+        response = client.put(
+            "/user/3", headers=AUTH,
+            json={"id": 3,"username": "fops","numbers": 8098,},
+        )
+
         response = client.put(
             "/message/1",
             headers=AUTH,
@@ -443,7 +529,7 @@ class TestMessageMentions:
                     {'msg_id': '1', 'mention': '2', 'type': 'user'},
                     {'msg_id': '1', 'mention': '3', 'type': 'user'},
                     {'msg_id': '1', 'mention': 'everyone', 'type': 'role'},
-                    {'msg_id': '1', 'mention': 'league', 'type': 'role'},
+                    {'msg_id': '1', 'mention': '5', 'type': 'role'},
                 ],
             },
         )
@@ -458,7 +544,7 @@ class TestMessageMentions:
             {'msg_id': '1', 'mention': '2', 'type': 'user'},
             {'msg_id': '1', 'mention': '3', 'type': 'user'},
             {'msg_id': '1', 'mention': 'everyone', 'type': 'role'},
-            {'msg_id': '1', 'mention': 'league', 'type': 'role'},
+            {'msg_id': '1', 'mention': '5', 'type': 'role'},
         ]
 
 
