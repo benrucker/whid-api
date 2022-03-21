@@ -109,8 +109,9 @@ def add_message(msg_id: str, message: schemas.MessageCreate, db: Session = Depen
 
 
 def get_missing_fields(message, db):
+    members = [message.author]
     if message.mentions:
-        members = [message.author] + \
+        members = members + \
             list(
                 map(
                     lambda x: x.mention, filter(
@@ -118,8 +119,6 @@ def get_missing_fields(message, db):
                     )
                 )
             )
-    else:
-        members = []
 
     missing_members = []
     for member in members:
