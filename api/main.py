@@ -1,11 +1,14 @@
 from datetime import date, datetime
+from typing import Union
 from fastapi import Depends, FastAPI, status, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 from .dependencies import get_db, token
+from .exceptions import MissingReferencedDataException
 from .enums import Epoch
 
 tags = [
@@ -48,6 +51,14 @@ app = FastAPI(
 )
 
 
+@app.exception_handler(MissingReferencedDataException)
+async def missing_refs_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=status.HTTP_424_FAILED_DEPENDENCY,
+        content=exc.to_content()
+    )
+
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
@@ -77,17 +88,20 @@ def read_message(msg_id: str, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
 
-@app.put("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
+@app.put(
+    "/message/{msg_id}",
+    responses={
+        200: {'model': schemas.Message},
+        424: {'model': schemas.MissingData}
+    },
+    tags=['Messages']
+)
 def add_message(msg_id: str, message: schemas.MessageCreate, db: Session = Depends(get_db)):
     missing_users, missing_channels = get_missing_fields(message, db)
 
     if missing_users or missing_channels:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "missing_users": missing_users,
-                "missing_channels": missing_channels,
-            }
+        raise MissingReferencedDataException(
+            missing_users, missing_channels
         )
 
     db_msg = crud.add_message(db, message)

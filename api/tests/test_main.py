@@ -316,9 +316,9 @@ class TestMessagesExistanceResponses:
                 }],
             },
         )
-        assert response.status_code == 400
-        assert response.json()['detail']['missing_users'] == ["1", "2"]
-        assert response.json()['detail']['missing_channels'] == ["1"]
+        assert response.status_code == 424
+        assert response.json()['missing_users'] == ["1", "2"]
+        assert response.json()['missing_channels'] == ["1"]
 
     def test_put_message_with_user(self, client):
         add_a_channel_and_user(client)
@@ -339,8 +339,8 @@ class TestMessagesExistanceResponses:
                 }],
             },
         )
-        assert response.status_code == 400
-        assert response.json()['detail']['missing_users'] == ["2"]
+        assert response.status_code == 424
+        assert response.json()['missing_users'] == ["2"]
 
         response = client.put(
             "/user/1",

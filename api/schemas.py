@@ -4,6 +4,15 @@ from pydantic import BaseModel, HttpUrl
 from .enums import VoiceEventType
 
 
+class MissingData(BaseModel):
+    """
+    Model for missing data.
+    """
+
+    missing_users: list[str]
+    missing_channels: list[str]
+
+
 class AttachmentBase(BaseModel):
     msg_id: str
     url: HttpUrl
