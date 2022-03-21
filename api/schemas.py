@@ -9,7 +9,7 @@ class MissingData(BaseModel):
     Model for missing data.
     """
 
-    missing_users: list[str]
+    missing_members: list[str]
     missing_channels: list[str]
 
 
@@ -75,14 +75,14 @@ class MessageUpdate(BaseModel):
 
 
 class ReactionBase(BaseModel):
-    user_id: str
+    member_id: str
     msg_id: str
     emoji: str
     timestamp: datetime
 
 
 class ReactionDelete(BaseModel):
-    user_id: str
+    member_id: str
     msg_id: str
     emoji: str
 
@@ -123,7 +123,7 @@ class ChannelUpdate(BaseModel):
 
 
 class VoiceEventBase(BaseModel):
-    user_id: str
+    member_id: str
     type: VoiceEventType
     channel: str
     timestamp: datetime
@@ -142,7 +142,7 @@ class VoiceEvent(VoiceEventBase):
 
 class ScoreBase(BaseModel):
     epoch: int
-    user_id: str
+    member_id: str
     score: int
 
 
@@ -157,7 +157,7 @@ class Score(ScoreBase):
         orm_mode = True
 
 
-class UserBase(BaseModel):
+class MemberBase(BaseModel):
     id: str
     username: str
     nickname: str | None = None
@@ -167,11 +167,11 @@ class UserBase(BaseModel):
         orm_mode = True
 
 
-class UserCreate(UserBase):
+class MemberCreate(MemberBase):
     pass
 
 
-class UserUpdate(BaseModel):
+class MemberUpdate(BaseModel):
     username: str | None
     nickname: str | None
     numbers: str | None
@@ -180,7 +180,7 @@ class UserUpdate(BaseModel):
         orm_mode = True
 
 
-class User(UserBase):
+class Member(MemberBase):
     messages: list[Message]
     scores: list[Score]
 

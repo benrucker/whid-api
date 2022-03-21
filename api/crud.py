@@ -16,10 +16,10 @@ def get_message(db: Session, message_id: int):
     return db_msg
 
 
-def get_messages_from_user(db: Session, user_id: int):
+def get_messages_from_member(db: Session, member_id: int):
     messages = (
         db.query(models.Message)
-        .filter(models.Message.author == user_id)
+        .filter(models.Message.author == member_id)
         .all()
     )
     if not messages:
@@ -27,14 +27,14 @@ def get_messages_from_user(db: Session, user_id: int):
     return messages
 
 
-def get_messages_from_user_during_epoch(db: Session, user_id: int, epoch: Epoch | int):
+def get_messages_from_member_during_epoch(db: Session, member_id: int, epoch: Epoch | int):
     epoch = get_epoch(db, epoch)
     print(datetime.now())
     print(epoch)
     messages = (
         db.query(models.Message)
         .filter(
-            models.Message.author == user_id,
+            models.Message.author == member_id,
             models.Message.epoch == epoch,
         )
         .all()
@@ -70,37 +70,37 @@ def delete_message(db: Session, message_id: int):
     return db_message
 
 
-def get_all_users(db: Session):
-    users = db.query(models.User).all()
-    if not users:
+def get_all_members(db: Session):
+    members = db.query(models.Member).all()
+    if not members:
         raise KeyError()
-    return users
+    return members
 
 
-def get_user(db: Session, user_id: int):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if user is None:
+def get_member(db: Session, member_id: int):
+    member = db.query(models.Member).filter(models.Member.id == member_id).first()
+    if member is None:
         raise KeyError()
-    return user
+    return member
 
 
-def add_user(db: Session, user: schemas.UserCreate):
-    db_user = models.User(
-        **user.dict(),
+def add_member(db: Session, member: schemas.MemberCreate):
+    db_member = models.Member(
+        **member.dict(),
     )
-    db.add(db_user)
+    db.add(db_member)
     db.commit()
-    db.refresh(db_user)
-    return db_user
+    db.refresh(db_member)
+    return db_member
 
 
-def update_user(db: Session, user_id: int, user: dict):
-    db_user = get_user(db, user_id)
-    for attr, value in user.items():
-        setattr(db_user, attr, value)
+def update_member(db: Session, member_id: int, member: dict):
+    db_member = get_member(db, member_id)
+    for attr, value in member.items():
+        setattr(db_member, attr, value)
     db.commit()
-    db.refresh(db_user)
-    return db_user
+    db.refresh(db_member)
+    return db_member
 
 
 def get_scores(db: Session, epoch: Epoch | int):
@@ -161,12 +161,12 @@ def get_previous_epoch(db: Session):
     return prev
 
 
-def get_score(db: Session, user_id: int, epoch: Epoch | int):
+def get_score(db: Session, member_id: int, epoch: Epoch | int):
     epoch = get_epoch(db, epoch).id
     score = (
         db.query(models.Score)
         .filter(models.Score.epoch == epoch)
-        .filter(models.Score.user_id == user_id)
+        .filter(models.Score.member_id == member_id)
         .first()
     )
     if not score:
@@ -186,10 +186,10 @@ def generate_score_model(score: schemas.Score):
     )
 
 
-def get_reactions_from_user(db: Session, user_id: int):
+def get_reactions_from_member(db: Session, member_id: int):
     reactions = (
         db.query(models.Reaction)
-        .filter(models.Reaction.user_id == user_id)
+        .filter(models.Reaction.member_id == member_id)
         .all()
     )
     if not reactions:
@@ -197,12 +197,12 @@ def get_reactions_from_user(db: Session, user_id: int):
     return reactions
 
 
-def get_reactions_from_user_at_epoch(db: Session, user_id: int, epoch: Epoch | int):
+def get_reactions_from_member_at_epoch(db: Session, member_id: int, epoch: Epoch | int):
     epoch = get_epoch(db, epoch)
     reactions = (
         db.query(models.Reaction)
         .filter(
-            models.Reaction.user_id == user_id,
+            models.Reaction.member_id == member_id,
             epoch.start <= models.Reaction.timestamp,
             models.Reaction.timestamp < epoch.end
         )
@@ -228,7 +228,7 @@ def delete_reaction(db: Session, reaction: schemas.ReactionDelete):
         db.query(models.Reaction)
         .filter(
             models.Reaction.msg_id == reaction.msg_id,
-            models.Reaction.user_id == reaction.user_id,
+            models.Reaction.member_id == reaction.member_id,
             models.Reaction.emoji == reaction.emoji,
         )
         .first()
@@ -274,11 +274,11 @@ def delete_channel(db: Session, channel_id: int):
     return db_channel
 
 
-def get_voice_events(db: Session, user_id: int):
+def get_voice_events(db: Session, member_id: int):
     events = (
         db.query(models.VoiceEvent)
         .filter(
-            models.VoiceEvent.user_id == user_id,
+            models.VoiceEvent.member_id == member_id,
         )
         .all()
     )
@@ -287,12 +287,12 @@ def get_voice_events(db: Session, user_id: int):
     return events
 
 
-def get_voice_events_during_epoch(db: Session, user_id: int, epoch: Epoch | int):
+def get_voice_events_during_epoch(db: Session, member_id: int, epoch: Epoch | int):
     epoch = get_epoch(db, epoch)
     events = (
         db.query(models.VoiceEvent)
         .filter(
-            models.VoiceEvent.user_id == user_id,
+            models.VoiceEvent.member_id == member_id,
             epoch.start <= models.VoiceEvent.timestamp,
             models.VoiceEvent.timestamp < epoch.end
         )

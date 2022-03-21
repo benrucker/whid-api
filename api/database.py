@@ -6,7 +6,6 @@ from .settings import get_settings
 
 
 SQLALCHEMY_DATABASE_URL = get_settings().db_url
-# SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
 args = {"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {}
 

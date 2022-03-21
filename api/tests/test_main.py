@@ -27,9 +27,9 @@ class TestMisc:
         assert response.json() == {"Hello": "World"}
 
 
-def add_a_channel_and_user(client):
+def add_a_channel_and_member(client):
     response = client.put(
-        "/user/1",
+        "/member/1",
         headers=AUTH,
         json={
             "id": 1,
@@ -60,7 +60,7 @@ class TestMessages:
         )
         assert response.status_code == 404
 
-        add_a_channel_and_user(client)
+        add_a_channel_and_member(client)
 
         response = client.put(
             "/message/1",
@@ -96,7 +96,7 @@ class TestMessages:
             headers=AUTH,
         )
         assert response.status_code == 404
-        add_a_channel_and_user(client)
+        add_a_channel_and_member(client)
 
         response = client.put(
             "/message/1",
@@ -159,7 +159,7 @@ class TestMessages:
         assert response.status_code == 404
 
     def test_update_message(self, client):
-        add_a_channel_and_user(client)
+        add_a_channel_and_member(client)
         response = client.put(
             "/message/1",
             headers=AUTH,
@@ -258,7 +258,7 @@ class TestMessages:
         assert response.status_code == 404
 
     def test_delete_message(self, client):
-        add_a_channel_and_user(client)
+        add_a_channel_and_member(client)
         response = client.put(
             "/message/1",
             headers=AUTH,
@@ -286,16 +286,16 @@ class TestMessages:
 
 
 class TestMessagesExistanceResponses:
-    def test_put_message_without_user_or_channel(self, client):
-        # add_a_channel_and_user(client)
+    def test_put_message_without_member_or_channel(self, client):
+        # add_a_channel_and_member(client)
 
         # response = client.put(
-        #     "/user/2",
+        #     "/member/2",
         #     headers=AUTH,
         #     json={
         #         "id": 2,
-        #         "username": "user2",
-        #         "nickname": "user2",
+        #         "username": "member2",
+        #         "nickname": "member2",
         #         "numbers": "4321",
         #     }
         # )
@@ -312,16 +312,16 @@ class TestMessagesExistanceResponses:
                 "mentions": [{
                     "msg_id": "1",
                     "mention": "2",
-                    "type": "user",
+                    "type": "member",
                 }],
             },
         )
         assert response.status_code == 424
-        assert response.json()['missing_users'] == ["1", "2"]
+        assert response.json()['missing_members'] == ["1", "2"]
         assert response.json()['missing_channels'] == ["1"]
 
-    def test_put_message_with_user(self, client):
-        add_a_channel_and_user(client)
+    def test_put_message_with_member(self, client):
+        add_a_channel_and_member(client)
 
         response = client.put(
             "/message/1",
@@ -335,15 +335,15 @@ class TestMessagesExistanceResponses:
                 "mentions": [{
                     "msg_id": "1",
                     "mention": "2",
-                    "type": "user",
+                    "type": "member",
                 }],
             },
         )
         assert response.status_code == 424
-        assert response.json()['missing_users'] == ["2"]
+        assert response.json()['missing_members'] == ["2"]
 
         response = client.put(
-            "/user/1",
+            "/member/1",
             headers=AUTH,
             json={
                 "id": 2,
@@ -365,7 +365,7 @@ class TestMessagesExistanceResponses:
                 "mentions": [{
                     "msg_id": "1",
                     "mention": "2",
-                    "type": "user",
+                    "type": "member",
                 }],
             },
         )
@@ -412,31 +412,31 @@ class TestMultipleMessages:
 
     def test_getting_before_any_messages_fails(self, client):
         response = client.get(
-            "/message?user_id=1",
+            "/message?member_id=1",
             headers=AUTH,
         )
         assert response.status_code == 404
 
         response = client.get(
-            "/message?user_id=1&epoch=current",
+            "/message?member_id=1&epoch=current",
             headers=AUTH,
         )
         assert response.status_code == 404
 
         response = client.get(
-            "/message?user_id=2&epoch=current",
+            "/message?member_id=2&epoch=current",
             headers=AUTH,
         )
         assert response.status_code == 404
 
         response = client.get(
-            "/message?user_id=2&epoch=previous",
+            "/message?member_id=2&epoch=previous",
             headers=AUTH,
         )
         assert response.status_code == 404
 
     def test_get_multiple_messages_at_epoch(self, client):
-        add_a_channel_and_user(client)
+        add_a_channel_and_member(client)
         
         response = client.put(
             "/message/1",
@@ -478,25 +478,25 @@ class TestMultipleMessages:
         assert response.status_code == 200
 
         response = client.get(
-            "/message?user_id=1",
+            "/message?member_id=1",
             headers=AUTH,
         )
         assert response.status_code == 200
 
         response = client.get(
-            "/message?user_id=1&epoch=current",
+            "/message?member_id=1&epoch=current",
             headers=AUTH,
         )
         assert response.status_code == 200
 
         response = client.get(
-            "/message?user_id=2&epoch=current",
+            "/message?member_id=2&epoch=current",
             headers=AUTH,
         )
         assert response.status_code == 200
 
         response = client.get(
-            "/message?user_id=2&epoch=previous",
+            "/message?member_id=2&epoch=previous",
             headers=AUTH,
         )
         assert response.status_code == 404
@@ -504,14 +504,14 @@ class TestMultipleMessages:
 
 class TestMessageMentions:
     def test_message_has_mentions(self, client):
-        add_a_channel_and_user(client)
+        add_a_channel_and_member(client)
 
         response = client.put(
-            "/user/2", headers=AUTH,
+            "/member/2", headers=AUTH,
             json={"id": 2,"username": "fops","numbers": 8098,},
         )
         response = client.put(
-            "/user/3", headers=AUTH,
+            "/member/3", headers=AUTH,
             json={"id": 3,"username": "fops","numbers": 8098,},
         )
 
@@ -521,12 +521,12 @@ class TestMessageMentions:
             json={
                 "id": '1',
                 "timestamp": "2020-01-01T00:00:00",
-                "content": "hello @userwithIDofTwo and @three and also @everyone and especially @league",
+                "content": "hello @memberwithIDofTwo and @three and also @everyone and especially @league",
                 "author": '1',
                 "channel": '1',
                 "mentions": [
-                    {'msg_id': '1', 'mention': '2', 'type': 'user'},
-                    {'msg_id': '1', 'mention': '3', 'type': 'user'},
+                    {'msg_id': '1', 'mention': '2', 'type': 'member'},
+                    {'msg_id': '1', 'mention': '3', 'type': 'member'},
                     {'msg_id': '1', 'mention': 'everyone', 'type': 'role'},
                     {'msg_id': '1', 'mention': '5', 'type': 'role'},
                 ],
@@ -540,8 +540,8 @@ class TestMessageMentions:
         )
         assert response.status_code == 200
         assert response.json()['mentions'] == [
-            {'msg_id': '1', 'mention': '2', 'type': 'user'},
-            {'msg_id': '1', 'mention': '3', 'type': 'user'},
+            {'msg_id': '1', 'mention': '2', 'type': 'member'},
+            {'msg_id': '1', 'mention': '3', 'type': 'member'},
             {'msg_id': '1', 'mention': 'everyone', 'type': 'role'},
             {'msg_id': '1', 'mention': '5', 'type': 'role'},
         ]
@@ -647,16 +647,16 @@ class TestChannels:
         assert response.status_code == 404
 
 
-class TestUsers:
-    def test_one_user(self, client):
+class Testmembers:
+    def test_one_member(self, client):
         response = client.get(
-            "/user/1",
+            "/member/1",
             headers=AUTH,
         )
         assert response.status_code == 404
 
         response = client.put(
-            "/user/1",
+            "/member/1",
             headers=AUTH,
             json={
                 "id": 1,
@@ -668,7 +668,7 @@ class TestUsers:
         assert response.status_code == 200
 
         response = client.get(
-            "/user/1",
+            "/member/1",
             headers=AUTH,
         )
         assert response.status_code == 200
@@ -677,9 +677,9 @@ class TestUsers:
         assert response.json()['nickname'] == 'testname'
         assert response.json()['numbers'] == '8098'
 
-    def test_update_nonexistant_user(self, client):
+    def test_update_nonexistant_member(self, client):
         response = client.patch(
-            "/user/1",
+            "/member/1",
             headers=AUTH,
             json={
                 "username": "new name",
@@ -687,9 +687,9 @@ class TestUsers:
         )
         assert response.status_code == 404
 
-    def test_update_user(self, client):
+    def test_update_member(self, client):
         response = client.put(
-            "/user/1",
+            "/member/1",
             headers=AUTH,
             json={
                 "id": 1,
@@ -706,7 +706,7 @@ class TestUsers:
         assert response.json()['numbers'] == '8098'
 
         response = client.patch(
-            "/user/1",
+            "/member/1",
             headers=AUTH,
             json={
                 "username": "new username",
@@ -718,15 +718,15 @@ class TestUsers:
         assert response.json()['nickname'] == 'new nickname'
         assert response.json()['numbers'] == '8098'
 
-    def test_multiple_users(self, client):
+    def test_multiple_members(self, client):
         response = client.get(
-            "/user",
+            "/member",
             headers=AUTH,
         )
         assert response.status_code == 404
 
         response = client.put(
-            "/user/1",
+            "/member/1",
             headers=AUTH,
             json={
                 "id": 1,
@@ -736,7 +736,7 @@ class TestUsers:
             }
         )
         response = client.put(
-            "/user/2",
+            "/member/2",
             headers=AUTH,
             json={
                 "id": 2,
@@ -746,7 +746,7 @@ class TestUsers:
             }
         )
         response = client.get(
-            "/user",
+            "/member",
             headers=AUTH,
         )
         assert response.status_code == 200
@@ -787,7 +787,7 @@ class TestEvents:
     )
     def test_voice_event(self, client, event_type):
         response = client.get(
-            "/voice_event?epoch=current&user=1",
+            "/voice_event?epoch=current&member=1",
             headers=AUTH,
         )
         assert response.status_code == 404
@@ -796,7 +796,7 @@ class TestEvents:
             "/voice_event",
             headers=AUTH,
             json={
-                "user_id": 1,
+                "member_id": 1,
                 "type": event_type,
                 "channel": 1,
                 "timestamp": str(DAY_IN_THIRD_EPOCH),
@@ -805,40 +805,40 @@ class TestEvents:
         assert response.status_code == 200
 
         response = client.get(
-            "/voice_event?epoch=current&user=1",
+            "/voice_event?epoch=current&member=1",
             headers=AUTH,
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json()[0]['user_id'] == '1'
+        assert response.json()[0]['member_id'] == '1'
         assert response.json()[0]['type'] == event_type
         assert response.json()[0]['channel'] == '1'
         assert datetime.fromisoformat(response.json()[0]['timestamp']) \
             == DAY_IN_THIRD_EPOCH
 
         response = client.get(
-            "/voice_event?user=1",
+            "/voice_event?member=1",
             headers=AUTH,
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json()[0]['user_id'] == '1'
+        assert response.json()[0]['member_id'] == '1'
 
         # fail when epoch has no events
         response = client.get(
-            "/voice_event?epoch=previous&user=1",
+            "/voice_event?epoch=previous&member=1",
             headers=AUTH,
         )
         assert response.status_code == 404
         response = client.get(
-            "/voice_event?epoch=1&user=1",
+            "/voice_event?epoch=1&member=1",
             headers=AUTH,
         )
         assert response.status_code == 404
 
-        # fail when no events for user
+        # fail when no events for member
         response = client.get(
-            "/voice_event?epoch=current&user=2",
+            "/voice_event?epoch=current&member=2",
             headers=AUTH,
         )
         assert response.status_code == 404
@@ -855,7 +855,7 @@ class TestEvents:
             "/voice_event",
             headers=AUTH,
             json={
-                "user_id": 1,
+                "member_id": 1,
                 "type": event_type,
                 "channel": 1,
                 "timestamp": "2020-01-01T00:00:00",
@@ -890,17 +890,17 @@ class TestScores:
             json=[
                 {
                     "epoch": "1",
-                    "user_id": 1,
+                    "member_id": 1,
                     "score": 2,
                 },
                 {
                     "epoch": "1",
-                    "user_id": 2,
+                    "member_id": 2,
                     "score": 4,
                 },
                 {
                     "epoch": "1",
-                    "user_id": 3,
+                    "member_id": 3,
                     "score": 8,
                 }
             ]
@@ -915,9 +915,9 @@ class TestScores:
         assert response.status_code == 200
         assert len(response.json()) == 3
 
-    def test_get_scores_for_user_at_epoch(self, client):
+    def test_get_scores_for_member_at_epoch(self, client):
         response = client.get(
-            "/score?epoch=1&user_id=1",
+            "/score?epoch=1&member_id=1",
             headers=AUTH,
         )
         assert response.status_code == 404
@@ -928,27 +928,27 @@ class TestScores:
             json=[
                 {
                     "epoch": 1,
-                    "user_id": 1,
+                    "member_id": 1,
                     "score": 2,
                 },
                 {
                     "epoch": 1,
-                    "user_id": 2,
+                    "member_id": 2,
                     "score": 4,
                 },
                 {
                     "epoch": 1,
-                    "user_id": 3,
+                    "member_id": 3,
                     "score": 8,
                 },
                 {
                     "epoch": 2,
-                    "user_id": 1,
+                    "member_id": 1,
                     "score": 4,
                 },
                 {
                     "epoch": 3,
-                    "user_id": 1,
+                    "member_id": 1,
                     "score": 8,
                 },
             ]
@@ -956,17 +956,17 @@ class TestScores:
         assert response.status_code == 200
 
         response = client.get(
-            "/score?epoch=1&user_id=1",
+            "/score?epoch=1&member_id=1",
             headers=AUTH,
         )
         assert response.status_code == 200
-        assert response.json()['user_id'] == '1'
+        assert response.json()['member_id'] == '1'
         assert response.json()['score'] == 2
 
     def test_epoch_semantics(self, client):
 
         response = client.get(
-            "/score?epoch=current&user_id=1",
+            "/score?epoch=current&member_id=1",
             headers=AUTH,
         )
         assert response.status_code == 404
@@ -977,27 +977,27 @@ class TestScores:
             json=[
                 {
                     "epoch": 1,
-                    "user_id": 1,
+                    "member_id": 1,
                     "score": 2,
                 },
                 {
                     "epoch": 1,
-                    "user_id": 2,
+                    "member_id": 2,
                     "score": 4,
                 },
                 {
                     "epoch": 1,
-                    "user_id": 3,
+                    "member_id": 3,
                     "score": 8,
                 },
                 {
                     "epoch": 2,
-                    "user_id": 1,
+                    "member_id": 1,
                     "score": 4,
                 },
                 {
                     "epoch": 3,
-                    "user_id": 1,
+                    "member_id": 1,
                     "score": 8,
                 }
             ]
@@ -1005,35 +1005,35 @@ class TestScores:
         assert response.status_code == 200
 
         response = client.get(
-            "/score?epoch=current&user_id=1",
+            "/score?epoch=current&member_id=1",
             headers=AUTH,
         )
         assert response.status_code == 200
-        assert response.json()['user_id'] == '1'
+        assert response.json()['member_id'] == '1'
         assert response.json()['score'] == 8
         assert response.json() == client.get(
-            "/score?epoch=3&user_id=1",
+            "/score?epoch=3&member_id=1",
             headers=AUTH,
         ).json()
 
         response = client.get(
-            "/score?epoch=previous&user_id=1",
+            "/score?epoch=previous&member_id=1",
             headers=AUTH,
         )
         assert response.status_code == 200
-        assert response.json()['user_id'] == '1'
+        assert response.json()['member_id'] == '1'
         assert response.json()['score'] == 4
         assert response.json() == client.get(
-            "/score?epoch=2&user_id=1",
+            "/score?epoch=2&member_id=1",
             headers=AUTH,
         ).json()
 
         response = client.get(
-            "/score?epoch=1&user_id=1",
+            "/score?epoch=1&member_id=1",
             headers=AUTH,
         )
         assert response.status_code == 200
-        assert response.json()['user_id'] == '1'
+        assert response.json()['member_id'] == '1'
         assert response.json()['score'] == 2
 
     def test_get_all_scores_for_epoch(self, client):
@@ -1044,27 +1044,27 @@ class TestScores:
             json=[
                 {
                     "epoch": 1,
-                    "user_id": 1,
+                    "member_id": 1,
                     "score": 2,
                 },
                 {
                     "epoch": 1,
-                    "user_id": 2,
+                    "member_id": 2,
                     "score": 4,
                 },
                 {
                     "epoch": 1,
-                    "user_id": 3,
+                    "member_id": 3,
                     "score": 8,
                 },
                 {
                     "epoch": 2,
-                    "user_id": 1,
+                    "member_id": 1,
                     "score": 4,
                 },
                 {
                     "epoch": 3,
-                    "user_id": 1,
+                    "member_id": 1,
                     "score": 8,
                 }
             ]
@@ -1116,7 +1116,7 @@ class TestReactions:
 
     def test_reaction(self, client):
         response = client.get(
-            "/reaction?epoch=current&user_id=1",
+            "/reaction?epoch=current&member_id=1",
             headers=AUTH,
         )
         assert response.status_code == 404
@@ -1126,7 +1126,7 @@ class TestReactions:
             headers=AUTH,
             json={
                 "msg_id": 1,
-                "user_id": 1,
+                "member_id": 1,
                 "emoji": "🐼",
                 "timestamp": "2022-04-12T00:00:00",
             }
@@ -1134,37 +1134,37 @@ class TestReactions:
         assert response.status_code == 200
 
         response = client.get(
-            "/reaction?epoch=current&user_id=1",
+            "/reaction?epoch=current&member_id=1",
             headers=AUTH,
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json()[0]['user_id'] == '1'
+        assert response.json()[0]['member_id'] == '1'
         assert response.json()[0]['msg_id'] == '1'
         assert response.json()[0]['emoji'] == '🐼'
         assert response.json()[0]['timestamp'] == '2022-04-12T00:00:00'
 
         response = client.get(
-            "/reaction?user_id=1",
+            "/reaction?member_id=1",
             headers=AUTH,
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json()[0]['user_id'] == '1'
+        assert response.json()[0]['member_id'] == '1'
         assert response.json()[0]['msg_id'] == '1'
         assert response.json()[0]['emoji'] == '🐼'
         assert response.json()[0]['timestamp'] == '2022-04-12T00:00:00'
 
         # fail when epoch has none
         response = client.get(
-            "/reaction?epoch=previous&user_id=1",
+            "/reaction?epoch=previous&member_id=1",
             headers=AUTH,
         )
         assert response.status_code == 404
 
-        # fail when no events for user
+        # fail when no events for member
         response = client.get(
-            "/reaction?epoch=current&user_id=2",
+            "/reaction?epoch=current&member_id=2",
             headers=AUTH,
         )
         assert response.status_code == 404
@@ -1175,7 +1175,7 @@ class TestReactions:
             headers=AUTH,
             json={
                 "msg_id": 1,
-                "user_id": 1,
+                "member_id": 1,
                 "emoji": "🐼",
             }
         )
@@ -1186,7 +1186,7 @@ class TestReactions:
             headers=AUTH,
             json={
                 "msg_id": 1,
-                "user_id": 1,
+                "member_id": 1,
                 "emoji": "🐼",
                 "timestamp": "2022-04-12T00:00:00",
             }
@@ -1198,13 +1198,13 @@ class TestReactions:
             headers=AUTH,
             json={
                 "msg_id": 1,
-                "user_id": 1,
+                "member_id": 1,
                 "emoji": "🐼",
             }
         )
         assert response.status_code == 200
         assert response.json()['msg_id'] == '1'
-        assert response.json()['user_id'] == '1'
+        assert response.json()['member_id'] == '1'
         assert response.json()['emoji'] == '🐼'
         assert response.json()['timestamp'] == '2022-04-12T00:00:00'
 

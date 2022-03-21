@@ -11,8 +11,8 @@ class Message(Base):
     id = Column(String, primary_key=True, nullable=False)
     timestamp = Column(DateTime, nullable=False)
     content = Column(String)
-    author = Column(String, ForeignKey("user.id"), nullable=False)
-    replying_to = Column(String, ForeignKey("user.id"))
+    author = Column(String, ForeignKey("member.id"), nullable=False)
+    replying_to = Column(String, ForeignKey("member.id"))
     channel = Column(String, ForeignKey("channel.id"), nullable=False)
     edited = Column(Boolean)
     edited_timestamp = Column(DateTime)
@@ -53,7 +53,7 @@ class Reaction(Base):
 
     msg_id = Column(String, ForeignKey("message.id"),
                      primary_key=True, nullable=False)
-    user_id = Column(String, ForeignKey("user.id"),
+    member_id = Column(String, ForeignKey("member.id"),
                   primary_key=True, nullable=False)
     emoji = Column(String, primary_key=True, nullable=False)
     timestamp = Column(DateTime)
@@ -74,14 +74,14 @@ class VoiceEvent(Base):
     __tablename__ = "voice_event"
 
     id = Column(Integer, primary_key=True, index=True, nullable=False)
-    user_id = Column(String, ForeignKey("user.id"), nullable=False)
+    member_id = Column(String, ForeignKey("member.id"), nullable=False)
     type = Column(String, nullable=False)
     channel = Column(String, ForeignKey("channel.id"), nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
 
-class User(Base):
-    __tablename__ = "user"
+class Member(Base):
+    __tablename__ = "member"
 
     id = Column(String, primary_key=True, index=True, nullable=False)
     username = Column(String, nullable=False)
@@ -97,7 +97,7 @@ class Score(Base):
     __tablename__ = "score"
 
     epoch = Column(Integer, primary_key=True, index=True, nullable=False)
-    user_id = Column(String, ForeignKey("user.id"),
+    member_id = Column(String, ForeignKey("member.id"),
                      primary_key=True, nullable=False)
     date_processed = Column(Date, nullable=False)
     score = Column(Integer, nullable=False)
