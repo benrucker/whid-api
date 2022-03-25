@@ -243,7 +243,7 @@ def get_reactions(member_id: str, epoch: Epoch | int | None = None, db: Session 
         )
 
 
-@app.delete('/reaction', tags=['Reactions'])
+@app.delete('/reaction', response_model=schemas.Reaction, tags=['Reactions'])
 def delete_reaction(reaction: schemas.ReactionDelete, db: Session = Depends(get_db)):
     try:
         return crud.delete_reaction(db, reaction)
