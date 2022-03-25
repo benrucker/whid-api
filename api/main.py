@@ -109,32 +109,35 @@ def add_message(msg_id: str, message: schemas.MessageCreate, db: Session = Depen
 
 
 def get_missing_fields(message, db):
+    missing_members = get_missing_members(message, db)
+    missing_channels = get_missing_channels(message, db)
+    return list(missing_members), list(missing_channels)
+
+
+def get_missing_channels(message, db, ):
+    return filter_out_existing(db, [message.channel], crud.get_channel)
+
+
+def get_missing_members(message, db):
     members = [message.author]
     if message.mentions:
         members = members + \
-            list(
-                map(
-                    lambda x: x.mention, filter(
-                        lambda x: x.type == "member", message.mentions
-                    )
-                )
-            )
+            [x.mention for x in message.mentions if x.type == "member"]
     if message.replying_to:
         members.append(message.replying_to)
 
+    missing_members = filter_out_existing(db, members, crud.get_member)
+    return missing_members
+
+
+def filter_out_existing(db, members, getter):
     missing_members = set()
     for member in members:
         try:
-            crud.get_member(db, member)
+            getter(db, member)
         except KeyError:
             missing_members.add(member)
-
-    missing_channels = set()
-    try:
-        crud.get_channel(db, message.channel)
-    except KeyError:
-        missing_channels.add(message.channel)
-    return list(missing_members), list(missing_channels)
+    return missing_members
 
 
 @app.patch("/message/{msg_id}", response_model=schemas.Message, tags=['Messages'])
@@ -298,7 +301,20 @@ def get_voice_events(member: str, epoch: Epoch | int | None = None, db: Session 
 
 @app.post("/voice_event", response_model=schemas.VoiceEvent, tags=["Misc Events"])
 def add_voice_event(event: schemas.VoiceEvent, db: Session = Depends(get_db)):
+    missing_members, missing_channels = get_missing_fields_from_event(db, event)
+
+    if missing_members or missing_channels:
+        raise MissingReferencedDataException(
+            list(missing_members), list(missing_channels)
+        )        
+
     return crud.add_voice_event(db, event)
+
+
+def get_missing_fields_from_event(db: Session, event: schemas.VoiceEvent):
+    missing_channels = filter_out_existing(db, [event.channel], crud.get_channel)
+    missing_members = filter_out_existing(db, [event.member_id], crud.get_member)
+    return missing_members, missing_channels
 
 
 @app.get("/epoch/all", response_model=list[schemas.Epoch], tags=["Epochs"])

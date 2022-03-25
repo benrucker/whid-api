@@ -865,6 +865,8 @@ class TestEvents:
         ]
     )
     def test_voice_event(self, client, event_type):
+        add_a_channel_and_member(client)
+
         response = client.get(
             "/voice_event?epoch=current&member=1",
             headers=AUTH,
