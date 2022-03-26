@@ -52,3 +52,25 @@ uvicorn api.main:app --reload
 ./run
 ```
 10. View the documentation at http://127.0.0.1:8000/docs
+
+## Using `alembic`
+
+When a change has been made to the DB schema, you need to use `alembic` to update the production database. To do this:
+
+1. `cd` to the project folder
+2. `git pull` or run `./update`
+3. Generate a new almebic checkpoint: `alembic revision --autogenerate -m "<What was changed>"`
+4. Update the db: `alembic upgrade head`
+    - If you get an error with null values, update the revision script like this:
+    ```py
+    # old:
+    op.add_column('channel', sa.Column('type', sa.String(), nullable=True))
+    ```
+    ```py
+    # fixed:
+    op.add_column('channel', sa.Column('type', sa.String()))
+    op.execute('update channel set type = \'text\'')
+    op.alter_column('channel', 'type', nullable=False)
+    ```
+    - Rerun the update command
+5. If not done already, `HUP` the running process with `./update`
