@@ -66,6 +66,7 @@ class Channel(Base):
     name = Column(String, nullable=False)
     category = Column(String)
     thread = Column(Boolean, default=False, nullable=False)
+    type = Column(String, nullable=False)
 
     messages = relationship("Message")
 

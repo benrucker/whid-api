@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from pydantic import BaseModel, HttpUrl
 
-from .enums import VoiceEventType
+from .enums import VoiceEventType, ChannelType
 
 
 class MissingData(BaseModel):
@@ -101,6 +101,7 @@ class ChannelBase(BaseModel):
     name: str
     category: str | None = None
     thread: bool = False
+    type: ChannelType
 
     class Config:
         orm_mode = True

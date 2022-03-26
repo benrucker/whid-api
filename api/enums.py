@@ -22,3 +22,8 @@ class VoiceEventType(str, Enum):
     WEBCAM_STOP = "webcam stop"
     STREAM_START = "stream start"
     STREAM_STOP = "stream stop"
+
+
+class ChannelType(str, Enum):
+    TEXT = "text"
+    VOICE = "voice"

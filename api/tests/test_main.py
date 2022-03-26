@@ -3,6 +3,8 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 import pytest
 
+from api.enums import ChannelType
+
 from ..main import app
 from .setup import client, session
 
@@ -47,6 +49,7 @@ def add_a_channel_and_member(client):
             "name": "test",
             "category": "test",
             "thread": False,
+            "type": ChannelType.TEXT,
         },
     )
     assert response.status_code == 200
@@ -608,6 +611,7 @@ class TestChannels:
                 "name": "channel",
                 "category": "general",
                 "thread": False,
+                "type": ChannelType.TEXT,
             }
         )
         assert response.status_code == 200
@@ -641,6 +645,7 @@ class TestChannels:
                 "name": "channel",
                 "category": "general",
                 "thread": False,
+                "type": ChannelType.TEXT,
             }
         )
         assert response.status_code == 200
@@ -675,6 +680,7 @@ class TestChannels:
                 "name": "channel",
                 "category": "general",
                 "thread": False,
+                "type": ChannelType.TEXT,
             }
         )
         assert response.status_code == 200
