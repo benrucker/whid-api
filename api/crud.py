@@ -27,14 +27,13 @@ def get_messages_from_member(db: Session, member_id: int):
     return messages
 
 
-def get_messages_from_member_during_epoch(db: Session, member_id: int, epoch: Epoch | int):
+def get_messages_during_epoch(db: Session, epoch: Epoch | int):
     epoch = get_epoch(db, epoch)
     print(datetime.now())
     print(epoch)
     messages = (
         db.query(models.Message)
         .filter(
-            models.Message.author == member_id,
             models.Message.epoch == epoch,
         )
         .all()

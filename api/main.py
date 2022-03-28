@@ -65,17 +65,13 @@ def read_root():
 
 
 @app.get("/message", response_model=list[schemas.Message], tags=['Messages'])
-def read_messages(member_id: str, epoch: Epoch | int | None = None, db: Session = Depends(get_db)):
+def read_messages(epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
-        if epoch is None:
-            return crud.get_messages_from_member(db, member_id)
-        else:
-            return crud.get_messages_from_member_during_epoch(db, member_id, epoch)
+        return crud.get_messages_during_epoch(db, epoch)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="No messages found for member"
-            + f" at epoch {epoch}" if epoch else ""
+            detail=f"No messages found at epoch {epoch}"
         )
 
 
