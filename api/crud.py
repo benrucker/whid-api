@@ -8,8 +8,8 @@ from .settings import get_settings
 
 def get_message(db: Session, message_id: int):
     db_msg = (
-        db.query(models.Message)
-        .filter(models.Message.id == message_id)
+        db.query(schemas.Message)
+        .filter(schemas.Message.id == message_id)
         .first()
     )
     if db_msg is None:
@@ -19,8 +19,8 @@ def get_message(db: Session, message_id: int):
 
 def get_messages_from_member(db: Session, member_id: int):
     messages = (
-        db.query(models.Message)
-        .filter(models.Message.author == member_id)
+        db.query(schemas.Message)
+        .filter(schemas.Message.author == member_id)
         .all()
     )
     if not messages:
@@ -33,9 +33,9 @@ def get_messages_during_epoch(db: Session, epoch: Epoch | int):
     print(datetime.now())
     print(epoch)
     messages = (
-        db.query(models.Message)
+        db.query(schemas.Message)
         .filter(
-            models.Message.epoch == epoch,
+            schemas.Message.epoch == epoch,
         )
         .all()
     )
@@ -44,8 +44,8 @@ def get_messages_during_epoch(db: Session, epoch: Epoch | int):
     return messages
 
 
-def add_message(db: Session, message: schemas.MessageCreate):
-    db_message = models.Message(
+def add_message(db: Session, message: models.MessageCreate):
+    db_message = schemas.Message(
         **message.dict(),
     )
     db.add(db_message)
@@ -71,21 +71,21 @@ def delete_message(db: Session, message_id: int):
 
 
 def get_all_members(db: Session):
-    members = db.query(models.Member).all()
+    members = db.query(schemas.Member).all()
     if not members:
         raise KeyError()
     return members
 
 
 def get_member(db: Session, member_id: int):
-    member = db.query(models.Member).filter(models.Member.id == member_id).first()
+    member = db.query(schemas.Member).filter(schemas.Member.id == member_id).first()
     if member is None:
         raise KeyError()
     return member
 
 
-def add_member(db: Session, member: schemas.MemberCreate):
-    db_member = models.Member(
+def add_member(db: Session, member: models.MemberCreate):
+    db_member = schemas.Member(
         **member.dict(),
     )
     db.add(db_member)
@@ -100,7 +100,7 @@ def add_default_score_if_necessary(db: Session, member_id: int):
         get_scores_for_user(db, member_id)
         print('got score for user', member_id)
     except: 
-        db.add(models.Score(
+        db.add(schemas.Score(
             member_id=member_id,
             epoch=get_current_epoch(db),
             score=get_settings().default_score,
@@ -119,8 +119,8 @@ def update_member(db: Session, member_id: int, member: dict):
 
 def get_scores(db: Session, epoch: Epoch | int):
     epoch = get_epoch(db, epoch).id
-    scores = db.query(models.Score) \
-               .filter(models.Score.epoch == epoch) \
+    scores = db.query(schemas.Score) \
+               .filter(schemas.Score.epoch == epoch) \
                .all()
     if not scores:
         raise KeyError()
@@ -128,7 +128,7 @@ def get_scores(db: Session, epoch: Epoch | int):
 
 
 def get_epochs(db: Session):
-    epochs = db.query(models.Epoch).all()
+    epochs = db.query(schemas.Epoch).all()
     if not epochs or len(epochs) == 0:
         raise KeyError()
     return epochs
@@ -137,7 +137,7 @@ def get_epochs(db: Session):
 def get_epoch(db: Session, epoch: Epoch | int):
     epoch = epoch_to_int(db, epoch)
 
-    db_epoch = db.query(models.Epoch).filter(models.Epoch.id == epoch).first()
+    db_epoch = db.query(schemas.Epoch).filter(schemas.Epoch.id == epoch).first()
     if not db_epoch:
         raise KeyError(f'No epoch found {epoch}')
     return db_epoch
@@ -157,10 +157,10 @@ def epoch_to_int(db: Session, epoch: Epoch | int):
 def get_current_epoch(db: Session):
     now = datetime.now()
     epoch = (
-        db.query(models.Epoch)
+        db.query(schemas.Epoch)
         .filter(
-            models.Epoch.start <= now,
-            now < models.Epoch.end
+            schemas.Epoch.start <= now,
+            now < schemas.Epoch.end
         ).first()
     )
     if epoch is None:
@@ -178,9 +178,9 @@ def get_previous_epoch(db: Session):
 def get_score_for_user_during_epoch(db: Session, member_id: int, epoch: Epoch | int):
     epoch = get_epoch(db, epoch).id
     score = (
-        db.query(models.Score)
-        .filter(models.Score.epoch == epoch)
-        .filter(models.Score.member_id == member_id)
+        db.query(schemas.Score)
+        .filter(schemas.Score.epoch == epoch)
+        .filter(schemas.Score.member_id == member_id)
         .first()
     )
     if not score:
@@ -190,29 +190,29 @@ def get_score_for_user_during_epoch(db: Session, member_id: int, epoch: Epoch | 
 
 def get_scores_for_user(db: Session, member_id: int):
     db_score = (
-        db.query(models.Score)
-        .filter(models.Score.member_id == member_id)
+        db.query(schemas.Score)
+        .filter(schemas.Score.member_id == member_id)
     ).all()
     if not db_score:
         raise KeyError("No score for user")
     return db_score
 
 
-def add_scores(db: Session, scores: list[schemas.Score]):
+def add_scores(db: Session, scores: list[models.Score]):
     db.add_all(map(generate_score_model, scores))
     db.commit()
 
 
-def generate_score_model(score: schemas.Score):
-    return models.Score(
+def generate_score_model(score: models.Score):
+    return schemas.Score(
         **score.dict(),
     )
 
 
 def get_reactions_from_member(db: Session, member_id: int):
     reactions = (
-        db.query(models.Reaction)
-        .filter(models.Reaction.member_id == member_id)
+        db.query(schemas.Reaction)
+        .filter(schemas.Reaction.member_id == member_id)
         .all()
     )
     if not reactions:
@@ -223,11 +223,11 @@ def get_reactions_from_member(db: Session, member_id: int):
 def get_reactions_from_member_during_epoch(db: Session, member_id: int, epoch: Epoch | int):
     epoch = get_epoch(db, epoch)
     reactions = (
-        db.query(models.Reaction)
+        db.query(schemas.Reaction)
         .filter(
-            models.Reaction.member_id == member_id,
-            epoch.start <= models.Reaction.timestamp,
-            models.Reaction.timestamp < epoch.end
+            schemas.Reaction.member_id == member_id,
+            epoch.start <= schemas.Reaction.timestamp,
+            schemas.Reaction.timestamp < epoch.end
         )
         .all()
     )
@@ -236,8 +236,8 @@ def get_reactions_from_member_during_epoch(db: Session, member_id: int, epoch: E
     return reactions
 
 
-def add_reaction(db: Session, reaction: schemas.Reaction):
-    db_reaction = models.Reaction(
+def add_reaction(db: Session, reaction: models.Reaction):
+    db_reaction = schemas.Reaction(
         **reaction.dict(),
     )
     db.add(db_reaction)
@@ -246,13 +246,13 @@ def add_reaction(db: Session, reaction: schemas.Reaction):
     return db_reaction
 
 
-def delete_reaction(db: Session, reaction: schemas.ReactionDelete):
+def delete_reaction(db: Session, reaction: models.ReactionDelete):
     db_reaction = (
-        db.query(models.Reaction)
+        db.query(schemas.Reaction)
         .filter(
-            models.Reaction.msg_id == reaction.msg_id,
-            models.Reaction.member_id == reaction.member_id,
-            models.Reaction.emoji == reaction.emoji,
+            schemas.Reaction.msg_id == reaction.msg_id,
+            schemas.Reaction.member_id == reaction.member_id,
+            schemas.Reaction.emoji == reaction.emoji,
         )
         .first()
     )
@@ -263,8 +263,8 @@ def delete_reaction(db: Session, reaction: schemas.ReactionDelete):
     return db_reaction
 
 
-def add_channel(db: Session, channel: schemas.ChannelCreate):
-    db_channel = models.Channel(
+def add_channel(db: Session, channel: models.ChannelCreate):
+    db_channel = schemas.Channel(
         **channel.dict(),
     )
     db.add(db_channel)
@@ -274,8 +274,8 @@ def add_channel(db: Session, channel: schemas.ChannelCreate):
 
 
 def get_channel(db: Session, channel_id: int):
-    db_chan = db.query(models.Channel).filter(
-        models.Channel.id == channel_id).first()
+    db_chan = db.query(schemas.Channel).filter(
+        schemas.Channel.id == channel_id).first()
     if db_chan is None:
         raise KeyError()
     return db_chan
@@ -299,9 +299,9 @@ def delete_channel(db: Session, channel_id: int):
 
 def get_voice_events(db: Session, member_id: int):
     events = (
-        db.query(models.VoiceEvent)
+        db.query(schemas.VoiceEvent)
         .filter(
-            models.VoiceEvent.member_id == member_id,
+            schemas.VoiceEvent.member_id == member_id,
         )
         .all()
     )
@@ -313,10 +313,10 @@ def get_voice_events(db: Session, member_id: int):
 def get_voice_events_during_epoch(db: Session, epoch: Epoch | int):
     epoch = get_epoch(db, epoch)
     events = (
-        db.query(models.VoiceEvent)
+        db.query(schemas.VoiceEvent)
         .filter(
-            epoch.start <= models.VoiceEvent.timestamp,
-            models.VoiceEvent.timestamp < epoch.end
+            epoch.start <= schemas.VoiceEvent.timestamp,
+            schemas.VoiceEvent.timestamp < epoch.end
         )
         .all()
     )
@@ -325,8 +325,8 @@ def get_voice_events_during_epoch(db: Session, epoch: Epoch | int):
     return events
 
 
-def add_voice_event(db: Session, voice_event: schemas.VoiceEvent):
-    db_voice_event = models.VoiceEvent(
+def add_voice_event(db: Session, voice_event: models.VoiceEvent):
+    db_voice_event = schemas.VoiceEvent(
         **voice_event.dict(),
     )
     db.add(db_voice_event)

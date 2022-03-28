@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from api import models
+from api import schemas
 
 from ..database import Base
 from ..main import app, get_db, token
@@ -46,10 +46,10 @@ def session():
     # Begin a nested transaction (using SAVEPOINT).
     nested = connection.begin_nested()
 
-    session.add(models.Epoch(id=1, start=datetime(2022, 1, 1), end=datetime(2022, 3, 31)))
-    session.add(models.Epoch(id=2, start=datetime(2022, 4, 1), end=datetime(2022, 4, 7)))
-    session.add(models.Epoch(id=3, start=datetime(2022, 4, 8), end=datetime(2022, 4, 14)))
-    session.add(models.Epoch(id=4, start=datetime(2022, 4, 15), end=datetime(2022, 4, 21)))
+    session.add(schemas.Epoch(id=1, start=datetime(2022, 1, 1), end=datetime(2022, 3, 31)))
+    session.add(schemas.Epoch(id=2, start=datetime(2022, 4, 1), end=datetime(2022, 4, 7)))
+    session.add(schemas.Epoch(id=3, start=datetime(2022, 4, 8), end=datetime(2022, 4, 14)))
+    session.add(schemas.Epoch(id=4, start=datetime(2022, 4, 15), end=datetime(2022, 4, 21)))
     session.commit()
 
     # If the application code calls session.commit, it will end the nested

@@ -1,112 +1,194 @@
-from sqlite3 import Timestamp
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Date
-from sqlalchemy.orm import relationship
+from datetime import date, datetime
+from pydantic import BaseModel, HttpUrl
 
-from .database import Base
-
-
-class Message(Base):
-    __tablename__ = "message"
-
-    id = Column(String, primary_key=True, nullable=False)
-    timestamp = Column(DateTime, nullable=False)
-    content = Column(String)
-    author = Column(String, ForeignKey("member.id"), nullable=False)
-    replying_to = Column(String, ForeignKey("member.id"))
-    channel = Column(String, ForeignKey("channel.id"), nullable=False)
-    edited = Column(Boolean)
-    edited_timestamp = Column(DateTime)
-    deleted = Column(Boolean, default=False, nullable=False)
-    deleted_timestamp = Column(DateTime)
-    pinned = Column(Boolean, default=False, nullable=False)
-
-    mentions = relationship("Mention", primaryjoin="Mention.msg_id == Message.id")
-    attachments = relationship("Attachment")
-    epoch = relationship(
-        "Epoch",
-        primaryjoin="and_(remote(Epoch.start) <= Message.timestamp, Message.timestamp < remote(Epoch.end))",
-        foreign_keys=timestamp,
-        remote_side="Epoch.id",
-        viewonly=True,
-    )
+from .enums import VoiceEventType, ChannelType
 
 
-class Mention(Base):
-    __tablename__ = "mention"
+class MissingData(BaseModel):
+    """
+    Model for missing data.
+    """
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    msg_id = Column(String, ForeignKey("message.id"), nullable=False)
-    mention = Column(String, nullable=False)
-    type = Column(String, nullable=False)
-
-
-class Attachment(Base):
-    __tablename__ = "attachment"
-
-    id = Column(Integer, primary_key=True, nullable=False)
-    msg_id = Column(String, ForeignKey("message.id"), nullable=False)
-    url = Column(String, nullable=False)
+    missing_members: list[str]
+    missing_channels: list[str]
 
 
-class Reaction(Base):
-    __tablename__ = "reaction"
-
-    msg_id = Column(String, ForeignKey("message.id"),
-                     primary_key=True, nullable=False)
-    member_id = Column(String, ForeignKey("member.id"),
-                  primary_key=True, nullable=False)
-    emoji = Column(String, primary_key=True, nullable=False)
-    timestamp = Column(DateTime)
+class AttachmentBase(BaseModel):
+    msg_id: str
+    url: HttpUrl
 
 
-class Channel(Base):
-    __tablename__ = "channel"
-
-    id = Column(String, primary_key=True, index=True, nullable=False)
-    name = Column(String, nullable=False)
-    category = Column(String)
-    thread = Column(Boolean, default=False, nullable=False)
-    type = Column(String, nullable=False)
-
-    messages = relationship("Message")
+class AttachmentCreate(AttachmentBase):
+    pass
 
 
-class VoiceEvent(Base):
-    __tablename__ = "voice_event"
+class Mention(BaseModel):
+    msg_id: str
+    mention: str
+    type: str
 
-    id = Column(Integer, primary_key=True, index=True, nullable=False)
-    member_id = Column(String, ForeignKey("member.id"), nullable=False)
-    type = Column(String, nullable=False)
-    channel = Column(String, ForeignKey("channel.id"), nullable=False)
-    timestamp = Column(DateTime, nullable=False)
-
-
-class Score(Base):
-    __tablename__ = "score"
-
-    epoch = Column(Integer, primary_key=True, index=True, nullable=False)
-    member_id = Column(String, ForeignKey("member.id"),
-                     primary_key=True, nullable=False)
-    score = Column(Integer, nullable=False)
+    class Config:
+        orm_mode = True
 
 
-class Member(Base):
-    __tablename__ = "member"
-
-    id = Column(String, primary_key=True, index=True, nullable=False)
-    username = Column(String, nullable=False)
-    nickname = Column(String)
-    numbers = Column(String(4), nullable=False)
-    bot = Column(Boolean, nullable=False, default=False)
-
-    messages = relationship("Message", foreign_keys=[Message.author])
-    scores = relationship("Score", foreign_keys=[Score.member_id])
-    reactions = relationship("Reaction")
+class Attachment(AttachmentBase):
+    class Config:
+        orm_mode = True
 
 
-class Epoch(Base):
-    __tablename__ = "epoch"
+class MessageBase(BaseModel):
+    id: str
+    timestamp: datetime
+    content: str
+    attachments: list[Attachment] | None = None
+    author: str
+    replying_to: str | None = None
+    channel: str
+    mentions: list[Mention] | None = None
+    edited: bool = False
+    edited_timestamp: datetime | None = None
+    deleted: bool = False
+    deleted_timestamp: datetime | None = None
+    pinned: bool = False
 
-    id = Column(Integer, primary_key=True, index=True, nullable=False)
-    start = Column(DateTime, nullable=False)
-    end = Column(DateTime, nullable=False)
+
+class MessageCreate(MessageBase):
+    pass
+
+
+class Message(MessageBase):
+    class Config:
+        orm_mode = True
+
+
+class MessageUpdate(BaseModel):
+    content: str | None
+    mentions: list[Mention] | None
+    edited: bool | None = True
+    edited_timestamp: datetime | None
+    deleted: bool | None
+    deleted_timestamp: datetime | None
+    pinned: bool | None
+
+    class Config:
+        orm_mode = True
+
+
+class ReactionBase(BaseModel):
+    member_id: str
+    msg_id: str
+    emoji: str
+    timestamp: datetime
+
+
+class ReactionDelete(BaseModel):
+    member_id: str
+    msg_id: str
+    emoji: str
+
+
+class ReactionCreate(ReactionBase):
+    pass
+
+
+class Reaction(ReactionBase):
+    class Config:
+        orm_mode = True
+
+
+class ChannelBase(BaseModel):
+    id: str
+    name: str
+    category: str | None = None
+    thread: bool = False
+    type: ChannelType
+
+    class Config:
+        orm_mode = True
+
+
+class ChannelCreate(ChannelBase):
+    pass
+
+
+class Channel(ChannelBase):
+    messages: list[Message]
+
+
+class ChannelUpdate(BaseModel):
+    name: str | None
+    category: str | None
+
+    class Config:
+        orm_mode = True
+
+
+class VoiceEventBase(BaseModel):
+    member_id: str
+    type: VoiceEventType
+    channel: str
+    timestamp: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class VoiceEventCreate(VoiceEventBase):
+    pass
+
+
+class VoiceEvent(VoiceEventBase):
+    pass
+
+
+class ScoreBase(BaseModel):
+    epoch: int
+    member_id: str
+    score: int
+
+
+class ScoreCreate(ScoreBase):
+    pass
+
+
+class Score(ScoreBase):
+    class Config:
+        orm_mode = True
+
+
+class MemberBase(BaseModel):
+    id: str
+    username: str
+    nickname: str | None = None
+    numbers: str
+    bot: bool = False
+
+    class Config:
+        orm_mode = True
+
+
+class MemberCreate(MemberBase):
+    pass
+
+
+class MemberUpdate(BaseModel):
+    username: str | None
+    nickname: str | None
+    numbers: str | None
+
+    class Config:
+        orm_mode = True
+
+
+class Member(MemberBase):
+    messages: list[Message]
+    scores: list[Score]
+
+
+class Epoch(BaseModel):
+    id: int
+    start: datetime
+    end: datetime
+
+    class Config:
+        orm_mode = True
