@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from . import models, schemas
 from .enums import Epoch
+from .settings import get_settings
 
 
 def get_message(db: Session, message_id: int):
@@ -90,7 +91,21 @@ def add_member(db: Session, member: schemas.MemberCreate):
     db.add(db_member)
     db.commit()
     db.refresh(db_member)
+    add_default_score_if_necessary(db, db_member.id)
     return db_member
+
+
+def add_default_score_if_necessary(db: Session, member_id: int):
+    try:
+        get_scores_for_user(db, member_id)
+        print('got score for user', member_id)
+    except: 
+        db.add(models.Score(
+            member_id=member_id,
+            epoch=get_current_epoch(db),
+            score=get_settings().default_score,
+        ))
+        db.commit()
 
 
 def update_member(db: Session, member_id: int, member: dict):
@@ -160,7 +175,7 @@ def get_previous_epoch(db: Session):
     return prev
 
 
-def get_score(db: Session, member_id: int, epoch: Epoch | int):
+def get_score_for_user_during_epoch(db: Session, member_id: int, epoch: Epoch | int):
     epoch = get_epoch(db, epoch).id
     score = (
         db.query(models.Score)
@@ -173,6 +188,16 @@ def get_score(db: Session, member_id: int, epoch: Epoch | int):
     return score
 
 
+def get_scores_for_user(db: Session, member_id: int):
+    db_score = (
+        db.query(models.Score)
+        .filter(models.Score.member_id == member_id)
+    ).all()
+    if not db_score:
+        raise KeyError("No score for user")
+    return db_score
+
+
 def add_scores(db: Session, scores: list[schemas.Score]):
     db.add_all(map(generate_score_model, scores))
     db.commit()
@@ -181,7 +206,6 @@ def add_scores(db: Session, scores: list[schemas.Score]):
 def generate_score_model(score: schemas.Score):
     return models.Score(
         **score.dict(),
-        date_processed=date.today(),
     )
 
 

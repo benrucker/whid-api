@@ -152,8 +152,6 @@ class ScoreCreate(ScoreBase):
 
 
 class Score(ScoreBase):
-    date_processed: date
-
     class Config:
         orm_mode = True
 

@@ -208,7 +208,7 @@ def get_scores(epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
 @app.get("/score", response_model=schemas.Score, tags=["Scores"])
 def get_score(member_id: str, epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
-        return crud.get_score(db, member_id, epoch)
+        return crud.get_score_for_user_during_epoch(db, member_id, epoch)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No score found for given member and epoch")

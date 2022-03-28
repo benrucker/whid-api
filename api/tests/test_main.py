@@ -1180,6 +1180,21 @@ class TestScores:
             headers=AUTH,
         ).json()
 
+    def test_adding_user_creates_score(self, client):
+        response = client.get(
+            "/scores?epoch=3",
+            headers=AUTH,
+        )
+        assert response.status_code == 404
+
+        add_a_channel_and_member(client)
+        
+        response = client.get(
+            "/scores?epoch=3",
+            headers=AUTH,
+        )
+        assert response.status_code == 200
+        assert response.json()[0]['member_id'] == '1'
 
 class TestReactions:
     @ classmethod

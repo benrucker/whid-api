@@ -81,6 +81,15 @@ class VoiceEvent(Base):
     timestamp = Column(DateTime, nullable=False)
 
 
+class Score(Base):
+    __tablename__ = "score"
+
+    epoch = Column(Integer, primary_key=True, index=True, nullable=False)
+    member_id = Column(String, ForeignKey("member.id"),
+                     primary_key=True, nullable=False)
+    score = Column(Integer, nullable=False)
+
+
 class Member(Base):
     __tablename__ = "member"
 
@@ -91,18 +100,8 @@ class Member(Base):
     bot = Column(Boolean, nullable=False, default=False)
 
     messages = relationship("Message", foreign_keys=[Message.author])
-    scores = relationship("Score")
+    scores = relationship("Score", foreign_keys=[Score.member_id])
     reactions = relationship("Reaction")
-
-
-class Score(Base):
-    __tablename__ = "score"
-
-    epoch = Column(Integer, primary_key=True, index=True, nullable=False)
-    member_id = Column(String, ForeignKey("member.id"),
-                     primary_key=True, nullable=False)
-    date_processed = Column(Date, nullable=False)
-    score = Column(Integer, nullable=False)
 
 
 class Epoch(Base):
