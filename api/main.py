@@ -167,7 +167,7 @@ def pin_message(msg_id, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
 
-@app.get("/member", response_model=list[schemas.Member], tags=['members'])
+@app.get("/member", response_model=list[schemas.Member], tags=['Members'])
 def get_all_members(db: Session = Depends(get_db)):
     try:
         return crud.get_all_members(db)
@@ -177,7 +177,7 @@ def get_all_members(db: Session = Depends(get_db)):
         )
 
 
-@app.get("/member/{member_id}", response_model=schemas.MemberBase, tags=["members"])
+@app.get("/member/{member_id}", response_model=schemas.MemberBase, tags=["Members"])
 def get_member(member_id: str, db: Session = Depends(get_db)):
     try:
         return crud.get_member(db, member_id)
@@ -186,12 +186,12 @@ def get_member(member_id: str, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="member not found")
 
 
-@app.put("/member/{member_id}", response_model=schemas.Member, tags=["members"])
+@app.put("/member/{member_id}", response_model=schemas.Member, tags=["Members"])
 def add_member(member_id: str, member: schemas.MemberCreate, db: Session = Depends(get_db)):
     return crud.add_member(db, member)
 
 
-@app.patch("/member/{member_id}", response_model=schemas.Member, tags=["members"])
+@app.patch("/member/{member_id}", response_model=schemas.Member, tags=["Members"])
 def update_member(member_id: str, data: schemas.MemberUpdate, db: Session = Depends(get_db)):
     try:
         return crud.update_member(db, member_id, data.dict(exclude_unset=True))
