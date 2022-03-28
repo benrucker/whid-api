@@ -196,7 +196,7 @@ def get_reactions_from_member(db: Session, member_id: int):
     return reactions
 
 
-def get_reactions_from_member_at_epoch(db: Session, member_id: int, epoch: Epoch | int):
+def get_reactions_from_member_during_epoch(db: Session, member_id: int, epoch: Epoch | int):
     epoch = get_epoch(db, epoch)
     reactions = (
         db.query(models.Reaction)
@@ -286,12 +286,11 @@ def get_voice_events(db: Session, member_id: int):
     return events
 
 
-def get_voice_events_during_epoch(db: Session, member_id: int, epoch: Epoch | int):
+def get_voice_events_during_epoch(db: Session, epoch: Epoch | int):
     epoch = get_epoch(db, epoch)
     events = (
         db.query(models.VoiceEvent)
         .filter(
-            models.VoiceEvent.member_id == member_id,
             epoch.start <= models.VoiceEvent.timestamp,
             models.VoiceEvent.timestamp < epoch.end
         )

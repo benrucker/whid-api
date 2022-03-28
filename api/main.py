@@ -229,7 +229,7 @@ def add_reaction(reaction: schemas.Reaction, db: Session = Depends(get_db)):
 def get_reactions(member_id: str, epoch: Epoch | int | None = None, db: Session = Depends(get_db)):
     try:
         if epoch:
-            return crud.get_reactions_from_member_at_epoch(db, member_id, epoch)
+            return crud.get_reactions_from_member_during_epoch(db, member_id, epoch)
         else:
             return crud.get_reactions_from_member(db, member_id)
     except KeyError as e:
@@ -284,12 +284,9 @@ def delete_channel(chan_id: str, db: Session = Depends(get_db)):
 
 
 @app.get("/voice_event", response_model=list[schemas.VoiceEvent], tags=['Misc Events'])
-def get_voice_events(member: str, epoch: Epoch | int | None = None, db: Session = Depends(get_db)):
+def get_voice_events(epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
-        if epoch:
-            return crud.get_voice_events_during_epoch(db, member, epoch)
-        else:
-            return crud.get_voice_events(db, member)
+        return crud.get_voice_events_during_epoch(db, epoch)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Events not found")

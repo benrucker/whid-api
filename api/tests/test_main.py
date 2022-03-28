@@ -874,7 +874,7 @@ class TestEvents:
         add_a_channel_and_member(client)
 
         response = client.get(
-            "/voice_event?epoch=current&member=1",
+            "/voice_event?epoch=current",
             headers=AUTH,
         )
         assert response.status_code == 404
@@ -892,7 +892,7 @@ class TestEvents:
         assert response.status_code == 200
 
         response = client.get(
-            "/voice_event?epoch=current&member=1",
+            "/voice_event?epoch=current",
             headers=AUTH,
         )
         assert response.status_code == 200
@@ -913,19 +913,12 @@ class TestEvents:
 
         # fail when epoch has no events
         response = client.get(
-            "/voice_event?epoch=previous&member=1",
+            "/voice_event?epoch=previous",
             headers=AUTH,
         )
         assert response.status_code == 404
         response = client.get(
-            "/voice_event?epoch=1&member=1",
-            headers=AUTH,
-        )
-        assert response.status_code == 404
-
-        # fail when no events for member
-        response = client.get(
-            "/voice_event?epoch=current&member=2",
+            "/voice_event?epoch=1",
             headers=AUTH,
         )
         assert response.status_code == 404
