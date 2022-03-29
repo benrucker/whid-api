@@ -1,4 +1,3 @@
-from sqlite3 import Timestamp
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Date
 from sqlalchemy.orm import relationship
 
@@ -46,6 +45,7 @@ class Attachment(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     msg_id = Column(String, ForeignKey("message.id"), nullable=False)
     url = Column(String, nullable=False)
+    sticker = Column(Boolean, nullable=False, default=False)
 
 
 class Reaction(Base):

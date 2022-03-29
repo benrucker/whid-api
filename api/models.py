@@ -16,6 +16,7 @@ class MissingData(BaseModel):
 class AttachmentBase(BaseModel):
     msg_id: str
     url: HttpUrl
+    sticker: bool = False
 
 
 class AttachmentCreate(AttachmentBase):

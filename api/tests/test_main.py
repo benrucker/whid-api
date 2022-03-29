@@ -119,6 +119,11 @@ class TestMessages:
                         "msg_id": 1,
                         "url": "https://example.com/image2.png",
                     },
+                    {
+                        "msg_id": 1,
+                        "url": "https://example.com/image3.png",
+                        "sticker": True,
+                    },
                 ],
             },
         )
@@ -142,10 +147,17 @@ class TestMessages:
             {
                 "msg_id": '1',
                 "url": "https://example.com/image.png",
+                "sticker": False,
             },
             {
                 "msg_id": '1',
                 "url": "https://example.com/image2.png",
+                "sticker": False,
+            },
+            {
+                "msg_id": '1',
+                "url": "https://example.com/image3.png",
+                "sticker": True,
             },
         ]
 
