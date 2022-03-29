@@ -1196,6 +1196,45 @@ class TestScores:
         assert response.status_code == 200
         assert response.json()[0]['member_id'] == '1'
 
+    def test_get_scores_for_user(self, client):
+        add_a_channel_and_member(client)
+        # add some scores
+        response = client.post(
+            "/scores",
+            headers=AUTH,
+            json=[
+                {
+                    "epoch": 1,
+                    "member_id": 1,
+                    "score": 2,
+                },
+                {
+                    "epoch": 2,
+                    "member_id": 1,
+                    "score": 4,
+                },
+            ]
+        )
+        assert response.status_code == 200
+        # get the scores
+        response = client.get(
+            "/member/1/scores",
+            headers=AUTH,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 3
+        assert data[0]['member_id'] == '1'
+        assert data[1]['member_id'] == '1'
+        assert data[2]['member_id'] == '1'
+        scores = {x['score'] for x in data}
+        assert scores == {2, 4, 750}
+        dates = {x['date'] for x in data}
+        assert dates == {'2022-04-01', '2022-04-08', '2022-01-01'}
+
+        
+
+
 class TestReactions:
     @ classmethod
     def setup_class(cls):

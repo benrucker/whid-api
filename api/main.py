@@ -196,6 +196,16 @@ def update_member(member_id: str, data: models.MemberUpdate, db: Session = Depen
             status_code=status.HTTP_404_NOT_FOUND, detail="member not found")
 
 
+@app.get("/member/{member_id}/scores", response_model=list[models.ScoreOut], tags=["Scores"])
+def get_member_scores(member_id: str, db: Session = Depends(get_db)):
+    try:
+        return crud.get_scores_for_user_with_date(db, member_id)
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No scores for member found"
+        )
+
+
 @app.get("/scores", response_model=list[models.Score], tags=["Scores"])
 def get_scores(epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
@@ -294,19 +304,22 @@ def get_voice_events(epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_
 
 @app.post("/voice_event", response_model=models.VoiceEvent, tags=["Misc Events"])
 def add_voice_event(event: models.VoiceEvent, db: Session = Depends(get_db)):
-    missing_members, missing_channels = get_missing_fields_from_event(db, event)
+    missing_members, missing_channels = get_missing_fields_from_event(
+        db, event)
 
     if missing_members or missing_channels:
         raise MissingReferencedDataException(
             list(missing_members), list(missing_channels)
-        )        
+        )
 
     return crud.add_voice_event(db, event)
 
 
 def get_missing_fields_from_event(db: Session, event: models.VoiceEvent):
-    missing_channels = filter_out_existing(db, [event.channel], crud.get_channel)
-    missing_members = filter_out_existing(db, [event.member_id], crud.get_member)
+    missing_channels = filter_out_existing(
+        db, [event.channel], crud.get_channel)
+    missing_members = filter_out_existing(
+        db, [event.member_id], crud.get_member)
     return missing_members, missing_channels
 
 

@@ -151,7 +151,13 @@ class ScoreCreate(ScoreBase):
     pass
 
 
+class ScoreOut(ScoreBase):
+    date: date
+    class Config:
+        orm_mode = True
+
 class Score(ScoreBase):
+
     class Config:
         orm_mode = True
 

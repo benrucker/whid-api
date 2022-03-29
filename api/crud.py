@@ -188,14 +188,17 @@ def get_score_for_user_during_epoch(db: Session, member_id: int, epoch: Epoch | 
     return score
 
 
-def get_scores_for_user(db: Session, member_id: int):
-    db_score = (
-        db.query(schemas.Score)
+def get_scores_for_user_with_date(db: Session, member_id: int):
+    db_scores = (
+        db.query(schemas.Score, schemas.Epoch.start)
         .filter(schemas.Score.member_id == member_id)
+        .join(schemas.Epoch, schemas.Score.epoch == schemas.Epoch.id)
     ).all()
-    if not db_score:
+    for score, start in db_scores:
+        score.date = start
+    if not db_scores:
         raise KeyError("No score for user")
-    return db_score
+    return [score for score, _ in db_scores]
 
 
 def add_scores(db: Session, scores: list[models.Score]):
