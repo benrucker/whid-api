@@ -36,7 +36,7 @@ def add_a_channel_and_member(client):
         json={
             "id": 1,
             "username": "test",
-            "nickname": "test",
+            "nickname": "nickname",
             "numbers": "1234",
         },
     )
@@ -1208,7 +1208,21 @@ class TestScores:
         assert response.status_code == 200
         assert response.json()[0]['member_id'] == '1'
 
-    def test_get_scores_for_user(self, client):
+    @pytest.mark.parametrize(
+        "get_route", [
+            "/member/1/scores",
+            "/member/name/test/scores",
+            "/member/name/nickname/scores"
+        ]
+    )
+    def test_get_scores_for_user(self, client, get_route):
+        print(get_route)
+        response = client.get(
+            get_route,
+            headers=AUTH,
+        )
+        assert response.status_code == 404
+
         add_a_channel_and_member(client)
         # add some scores
         response = client.post(
@@ -1230,7 +1244,7 @@ class TestScores:
         assert response.status_code == 200
         # get the scores
         response = client.get(
-            "/member/1/scores",
+            get_route,
             headers=AUTH,
         )
         assert response.status_code == 200
@@ -1243,8 +1257,6 @@ class TestScores:
         assert scores == {2, 4, 750}
         dates = {x['date'] for x in data}
         assert dates == {'2022-04-01', '2022-04-08', '2022-01-01'}
-
-        
 
 
 class TestReactions:

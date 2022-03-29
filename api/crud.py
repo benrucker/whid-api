@@ -97,7 +97,7 @@ def add_member(db: Session, member: models.MemberCreate):
 
 def add_default_score_if_necessary(db: Session, member_id: int):
     try:
-        get_scores_for_user(db, member_id)
+        get_scores_for_user_with_date(db, member_id)
         print('got score for user', member_id)
     except: 
         db.add(schemas.Score(
@@ -186,6 +186,29 @@ def get_score_for_user_during_epoch(db: Session, member_id: int, epoch: Epoch | 
     if not score:
         raise KeyError()
     return score
+
+
+def get_scores_for_user_by_name_with_date(db: Session, name: str):
+    member = get_member_by_name(db, name)
+    return get_scores_for_user_with_date(db, member.id)
+
+
+def get_member_by_name(db: Session, name: str):
+    member = (
+        db.query(schemas.Member)
+        .filter(schemas.Member.username.ilike(name))
+        .first()
+    )
+    if member:
+        return member
+    member = (
+        db.query(schemas.Member)
+        .filter(schemas.Member.nickname.ilike(name))
+        .first()
+    )
+    if member:
+        return member
+    raise KeyError(f'No member with name {name} in database')
 
 
 def get_scores_for_user_with_date(db: Session, member_id: int):
@@ -277,8 +300,11 @@ def add_channel(db: Session, channel: models.ChannelCreate):
 
 
 def get_channel(db: Session, channel_id: int):
-    db_chan = db.query(schemas.Channel).filter(
-        schemas.Channel.id == channel_id).first()
+    db_chan = (
+        db.query(schemas.Channel)
+        .filter(schemas.Channel.id == channel_id)
+        .first()
+    )
     if db_chan is None:
         raise KeyError()
     return db_chan

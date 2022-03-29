@@ -206,6 +206,16 @@ def get_member_scores(member_id: str, db: Session = Depends(get_db)):
         )
 
 
+@app.get("/member/name/{member_name}/scores", response_model=list[models.ScoreOut], tags=["Scores"])
+def get_member_scores_by_name(member_name: str, db: Session = Depends(get_db)):
+    try:
+        return crud.get_scores_for_user_by_name_with_date(db, member_name)
+    except KeyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No scores for member found"
+        )
+
+
 @app.get("/scores", response_model=list[models.Score], tags=["Scores"])
 def get_scores(epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
     try:
