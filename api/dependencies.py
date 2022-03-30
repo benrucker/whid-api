@@ -1,6 +1,8 @@
 from functools import lru_cache
+
+from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from fastapi import Depends, status, HTTPException
+
 from .database import SessionLocal
 from .settings import get_settings
 
