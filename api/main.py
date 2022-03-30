@@ -253,7 +253,6 @@ def update_member(member_id: str, data: models.MemberUpdate, db: Session = Depen
     "/member/{member_id}/scores",
     response_model=list[models.ScoreOut],
     tags=["Scores"],
-    dependencies=[Depends(token)]
 )
 def get_member_scores(member_id: str, db: Session = Depends(get_db)):
     try:
