@@ -135,6 +135,8 @@ def get_epoch(db: Session, epoch: Epoch | int) -> schemas.Epoch:
 
 def epoch_to_int(db: Session, epoch: Epoch | int):
     match epoch:
+        case Epoch.LAST:
+            epoch = get_latest_epoch_with_scores(db)
         case Epoch.CURR:
             epoch = get_current_epoch(db)
         case Epoch.PREV:
@@ -142,6 +144,18 @@ def epoch_to_int(db: Session, epoch: Epoch | int):
         case int:
             pass
     return epoch
+
+
+def get_latest_epoch_with_scores(db: Session):
+    epoch = (
+        db.query(schemas.Epoch)
+        .join(schemas.Score, schemas.Epoch.id == schemas.Score.epoch)
+        .order_by(schemas.Epoch.id.desc())
+        .first()
+    )
+    if epoch is None:
+        raise KeyError('No epoch with scores')
+    return epoch.id
 
 
 def get_current_epoch(db: Session):

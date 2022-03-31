@@ -485,7 +485,7 @@ class TestMultipleMessages:
 
     def test_get_multiple_messages_at_epoch(self, client):
         add_a_channel_and_member(client)
-        
+
         response = client.put(
             "/member/2",
             headers=AUTH,
@@ -568,11 +568,11 @@ class TestMessageMentions:
 
         response = client.put(
             "/member/2", headers=AUTH,
-            json={"id": 2,"username": "fops","numbers": 8098,},
+            json={"id": 2, "username": "fops", "numbers": 8098, },
         )
         response = client.put(
             "/member/3", headers=AUTH,
-            json={"id": 3,"username": "fops","numbers": 8098,},
+            json={"id": 3, "username": "fops", "numbers": 8098, },
         )
 
         response = client.put(
@@ -1150,7 +1150,7 @@ class TestScores:
         assert response.status_code == 404
 
         add_a_channel_and_member(client)
-        
+
         response = client.get(
             "/scores/3",
             headers=AUTH,
@@ -1267,6 +1267,45 @@ class TestScores:
         print(response.json())
         dates = {x['date'] for x in response.json()}
         assert dates == {'2022-01-01'}
+        names = {x['name'] for x in response.json()}
+        assert names == {'nickname', 'nickname2', 'nickname3'}
+
+    def test_latest_scores(self, client):
+        add_a_channel_and_member(client)
+
+        # add two more members
+        response = client.put(
+            "/member/2",
+            headers=AUTH,
+            json={
+                "id": 2,
+                "username": "test2",
+                "nickname": "nickname2",
+                "numbers": "1111",
+            }
+        )
+        assert response.status_code == 200
+        response = client.put(
+            "/member/3",
+            headers=AUTH,
+            json={
+                "id": 3,
+                "username": "test3",
+                "nickname": "nickname3",
+                "numbers": "1112",
+            }
+        )
+        assert response.status_code == 200
+
+        response = client.get(
+            "/scores/named/latest",
+            headers=AUTH,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 3
+        print(response.json())
+        dates = {x['date'] for x in response.json()}
+        assert dates == {'2022-04-08'}
         names = {x['name'] for x in response.json()}
         assert names == {'nickname', 'nickname2', 'nickname3'}
 

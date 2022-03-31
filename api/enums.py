@@ -4,6 +4,7 @@ from enum import Enum
 class Epoch(str, Enum):
     CURR = "current"
     PREV = "previous"
+    LAST = "latest"
 
 
 class VoiceEventType(str, Enum):
