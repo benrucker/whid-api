@@ -31,7 +31,8 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
           API_TOKENS: '["hello", "phat"]'
-          DB_URL: "sqlite:///./sql_app.db"
+          DB_URL: "sqlite:///./test.db"
+          DEFAULT_SCORE: 750
         with:
           coverageCommand: pytest --cov=api --cov-report=xml
           debug: true
