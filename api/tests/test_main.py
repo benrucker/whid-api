@@ -971,7 +971,7 @@ class TestScores:
 
     def test_get_scores_for_epoch(self, client):
         response = client.get(
-            "/scores?epoch=current",
+            "/scores/current",
             headers=AUTH,
         )
         assert response.status_code == 404
@@ -1001,62 +1001,13 @@ class TestScores:
         assert response.json() == "success! 3 scores have been processed"
 
         response = client.get(
-            "/scores?epoch=1",
+            "/scores/1",
             headers=AUTH,
         )
         assert response.status_code == 200
         assert len(response.json()) == 3
 
-    def test_get_scores_for_member_at_epoch(self, client):
-        response = client.get(
-            "/score?epoch=1&member_id=1",
-            headers=AUTH,
-        )
-        assert response.status_code == 404
-
-        response = client.post(
-            "/scores",
-            headers=AUTH,
-            json=[
-                {
-                    "epoch": 1,
-                    "member_id": 1,
-                    "score": 2,
-                },
-                {
-                    "epoch": 1,
-                    "member_id": 2,
-                    "score": 4,
-                },
-                {
-                    "epoch": 1,
-                    "member_id": 3,
-                    "score": 8,
-                },
-                {
-                    "epoch": 2,
-                    "member_id": 1,
-                    "score": 4,
-                },
-                {
-                    "epoch": 3,
-                    "member_id": 1,
-                    "score": 8,
-                },
-            ]
-        )
-        assert response.status_code == 200
-
-        response = client.get(
-            "/score?epoch=1&member_id=1",
-            headers=AUTH,
-        )
-        assert response.status_code == 200
-        assert response.json()['member_id'] == '1'
-        assert response.json()['score'] == 2
-
     def test_epoch_semantics(self, client):
-
         response = client.get(
             "/score?epoch=current&member_id=1",
             headers=AUTH,
@@ -1129,7 +1080,6 @@ class TestScores:
         assert response.json()['score'] == 2
 
     def test_get_all_scores_for_epoch(self, client):
-
         response = client.post(
             "/scores",
             headers=AUTH,
@@ -1164,37 +1114,37 @@ class TestScores:
         assert response.status_code == 200
 
         response = client.get(
-            "/scores?epoch=1",
+            "/scores/1",
             headers=AUTH,
         )
         assert response.status_code == 200
         assert len(response.json()) == 3
 
         response = client.get(
-            "/scores?epoch=2",
+            "/scores/2",
             headers=AUTH,
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
         assert response.json() == client.get(
-            "/scores?epoch=previous",
+            "/scores/previous",
             headers=AUTH,
         ).json()
 
         response = client.get(
-            "/scores?epoch=3",
+            "/scores/3",
             headers=AUTH,
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
         assert response.json() == client.get(
-            "/scores?epoch=current",
+            "/scores/current",
             headers=AUTH,
         ).json()
 
     def test_adding_user_creates_score(self, client):
         response = client.get(
-            "/scores?epoch=3",
+            "/scores/3",
             headers=AUTH,
         )
         assert response.status_code == 404
@@ -1202,7 +1152,7 @@ class TestScores:
         add_a_channel_and_member(client)
         
         response = client.get(
-            "/scores?epoch=3",
+            "/scores/3",
             headers=AUTH,
         )
         assert response.status_code == 200
@@ -1257,6 +1207,68 @@ class TestScores:
         assert scores == {2, 4, 750}
         dates = {x['date'] for x in data}
         assert dates == {'2022-04-01', '2022-04-08', '2022-01-01'}
+
+    def test_getting_scores_for_epoch_includes_name(self, client):
+        add_a_channel_and_member(client)
+
+        # add two more members
+        response = client.put(
+            "/member/2",
+            headers=AUTH,
+            json={
+                "id": 2,
+                "username": "test2",
+                "nickname": "nickname2",
+                "numbers": "1111",
+            }
+        )
+        assert response.status_code == 200
+        response = client.put(
+            "/member/3",
+            headers=AUTH,
+            json={
+                "id": 3,
+                "username": "test3",
+                "nickname": "nickname3",
+                "numbers": "1112",
+            }
+        )
+        assert response.status_code == 200
+
+        response = client.post(
+            "/scores",
+            headers=AUTH,
+            json=[
+                {
+                    "epoch": 1,
+                    "member_id": 1,
+                    "score": 2,
+                },
+                {
+                    "epoch": 1,
+                    "member_id": 2,
+                    "score": 4,
+                },
+                {
+                    "epoch": 1,
+                    "member_id": 3,
+                    "score": 8,
+                },
+            ]
+        )
+        assert response.status_code == 200
+
+        response = client.get(
+            "/scores/named/1",
+            headers=AUTH,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 3
+        print(response.json())
+        dates = {x['date'] for x in response.json()}
+        assert dates == {'2022-01-01'}
+        names = {x['name'] for x in response.json()}
+        assert names == {'nickname', 'nickname2', 'nickname3'}
 
 
 class TestReactions:

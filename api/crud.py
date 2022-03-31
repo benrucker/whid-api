@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import literal_column
 
 from . import models, schemas
 from .enums import Epoch
@@ -116,25 +117,14 @@ def update_member(db: Session, member_id: int, member: dict):
     db.refresh(db_member)
     return db_member
 
-
-def get_scores(db: Session, epoch: Epoch | int):
-    epoch = get_epoch(db, epoch).id
-    scores = db.query(schemas.Score) \
-               .filter(schemas.Score.epoch == epoch) \
-               .all()
-    if not scores:
-        raise KeyError()
-    return scores
-
-
-def get_epochs(db: Session):
+def get_epochs(db: Session) -> list[schemas.Epoch]:
     epochs = db.query(schemas.Epoch).all()
     if not epochs or len(epochs) == 0:
         raise KeyError()
     return epochs
 
 
-def get_epoch(db: Session, epoch: Epoch | int):
+def get_epoch(db: Session, epoch: Epoch | int) -> schemas.Epoch:
     epoch = epoch_to_int(db, epoch)
 
     db_epoch = db.query(schemas.Epoch).filter(schemas.Epoch.id == epoch).first()
@@ -186,6 +176,32 @@ def get_score_for_user_during_epoch(db: Session, member_id: int, epoch: Epoch | 
     if not score:
         raise KeyError()
     return score
+
+
+def get_scores(db: Session, epoch: Epoch | int):
+    epoch = get_epoch(db, epoch).id
+    scores = db.query(schemas.Score) \
+               .filter(schemas.Score.epoch == epoch) \
+               .all()
+    if not scores:
+        raise KeyError()
+    return scores
+
+
+def get_scores_with_name_and_date(db: Session, epoch: Epoch | int):
+    epoch = get_epoch(db, epoch)
+    scores = (
+        db.query(schemas.Score, schemas.Member)
+        .filter(schemas.Score.epoch == epoch.id)
+        .join(schemas.Member, schemas.Score.member_id == schemas.Member.id)
+        .all()
+    )
+    if not scores:
+        raise KeyError()
+    for score, member in scores:
+        score.name = member.nickname if member.nickname else member.username
+        score.date = epoch.start
+    return [score for score, _ in scores]
 
 
 def get_scores_for_user_by_name_with_date(db: Session, name: str):

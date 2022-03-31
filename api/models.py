@@ -152,10 +152,18 @@ class ScoreCreate(ScoreBase):
     pass
 
 
-class ScoreOut(ScoreBase):
+class ScoreDate(ScoreBase):
     date: date
     class Config:
         orm_mode = True
+
+
+class ScoreNameDate(ScoreBase):
+    date: date
+    name: str
+    class Config:
+        orm_mode = True
+
 
 class Score(ScoreBase):
 

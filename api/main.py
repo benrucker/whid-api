@@ -251,7 +251,7 @@ def update_member(member_id: str, data: models.MemberUpdate, db: Session = Depen
 
 @app.get(
     "/member/{member_id}/scores",
-    response_model=list[models.ScoreOut],
+    response_model=list[models.ScoreDate],
     tags=["Scores"],
 )
 def get_member_scores(member_id: str, db: Session = Depends(get_db)):
@@ -265,7 +265,7 @@ def get_member_scores(member_id: str, db: Session = Depends(get_db)):
 
 @app.get(
     "/member/name/{member_name}/scores",
-    response_model=list[models.ScoreOut],
+    response_model=list[models.ScoreDate],
     tags=["Scores"],
 )
 def get_member_scores_by_name(member_name: str, db: Session = Depends(get_db)):
@@ -278,16 +278,31 @@ def get_member_scores_by_name(member_name: str, db: Session = Depends(get_db)):
 
 
 @app.get(
-    "/scores",
+    "/scores/{epoch}",
     response_model=list[models.Score],
     tags=["Scores"],
 )
-def get_scores(epoch: Epoch | int = Epoch.CURR, db: Session = Depends(get_db)):
+def get_scores(epoch: Epoch | int, db: Session = Depends(get_db)):
     try:
         return crud.get_scores(db, epoch)
     except KeyError:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="No scores found for given epoch")
+            status_code=status.HTTP_404_NOT_FOUND, detail="No scores found for given epoch"
+        )
+
+
+@app.get(
+    "/scores/named/{epoch}",
+    response_model=list[models.ScoreNameDate],
+    tags=["Scores"],
+)
+def get_scores(epoch: Epoch | int, db: Session = Depends(get_db)):
+    try:
+        return crud.get_scores_with_name_and_date(db, epoch)
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No scores found for given epoch"
+        )
 
 
 @app.get(
