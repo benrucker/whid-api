@@ -55,13 +55,13 @@ def add_a_channel_and_member(client):
     assert response.status_code == 200
 
 
-def test_epochs_i_guess(client):
-    response = client.get(
-        "/epoch/all",
-        headers=AUTH,
-    )
-    print(response.json())
-    assert False
+# def test_epochs_i_guess(client):
+#     response = client.get(
+#         "/epoch/all",
+#         headers=AUTH,
+#     )
+#     print(response.json())
+#     assert False
 
 
 class TestMessages:
