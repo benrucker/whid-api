@@ -202,8 +202,8 @@ class Member(MemberBase):
 
 class Epoch(BaseModel):
     id: int
-    start: datetime
-    end: datetime
+    start: date
+    end: date
 
     class Config:
         orm_mode = True

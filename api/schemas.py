@@ -108,5 +108,5 @@ class Epoch(Base):
     __tablename__ = "epoch"
 
     id = Column(Integer, primary_key=True, index=True, nullable=False)
-    start = Column(DateTime, nullable=False)
-    end = Column(DateTime, nullable=False)
+    start = Column(Date, nullable=False)
+    end = Column(Date, nullable=False)
