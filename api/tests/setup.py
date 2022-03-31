@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 import pytest
 import sqlalchemy
 from fastapi import Depends
@@ -44,10 +44,10 @@ def session():
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
 
-    session.add(schemas.Epoch(id=1, start=datetime(2022, 1, 1), end=datetime(2022, 3, 31)))
-    session.add(schemas.Epoch(id=2, start=datetime(2022, 4, 1), end=datetime(2022, 4, 7)))
-    session.add(schemas.Epoch(id=3, start=datetime(2022, 4, 8), end=datetime(2022, 4, 14)))
-    session.add(schemas.Epoch(id=4, start=datetime(2022, 4, 15), end=datetime(2022, 4, 21)))
+    session.add(schemas.Epoch(id=1, start=date(2022, 1, 1), end=date(2022, 3, 31)))
+    session.add(schemas.Epoch(id=2, start=date(2022, 4, 1), end=date(2022, 4, 7)))
+    session.add(schemas.Epoch(id=3, start=date(2022, 4, 8), end=date(2022, 4, 14)))
+    session.add(schemas.Epoch(id=4, start=date(2022, 4, 15), end=date(2022, 4, 21)))
     session.commit()
 
     # Begin a nested transaction (using SAVEPOINT).
