@@ -14,13 +14,14 @@ from ..main import app, get_db, token
 from ..settings import get_settings
 
 
-SQLALCHEMY_DATABASE_URL = get_settings().db_url
+SQLALCHEMY_DATABASE_URL = 'sqlite:///./testdb.db'
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
 TestingSessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine
 )
+Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 
 
@@ -43,14 +44,14 @@ def session():
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
 
-    # Begin a nested transaction (using SAVEPOINT).
-    nested = connection.begin_nested()
-
     session.add(schemas.Epoch(id=1, start=datetime(2022, 1, 1), end=datetime(2022, 3, 31)))
     session.add(schemas.Epoch(id=2, start=datetime(2022, 4, 1), end=datetime(2022, 4, 7)))
     session.add(schemas.Epoch(id=3, start=datetime(2022, 4, 8), end=datetime(2022, 4, 14)))
     session.add(schemas.Epoch(id=4, start=datetime(2022, 4, 15), end=datetime(2022, 4, 21)))
     session.commit()
+
+    # Begin a nested transaction (using SAVEPOINT).
+    nested = connection.begin_nested()
 
     # If the application code calls session.commit, it will end the nested
     # transaction. Need to start a new one when that happens.
