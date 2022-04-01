@@ -1,6 +1,6 @@
-from datetime import date, datetime
+from datetime import datetime, timezone, tzinfo
+
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.expression import literal_column
 
 from . import models, schemas
 from .enums import Epoch
@@ -159,7 +159,7 @@ def get_latest_epoch_with_scores(db: Session):
 
 
 def get_current_epoch(db: Session):
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     epoch = (
         db.query(schemas.Epoch)
         .filter(
