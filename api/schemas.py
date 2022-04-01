@@ -1,4 +1,6 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Date
+from sqlalchemy import (
+    Boolean, Column, Date, DateTime, ForeignKey, Integer, String
+)
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -19,7 +21,9 @@ class Message(Base):
     deleted_timestamp = Column(DateTime)
     pinned = Column(Boolean, default=False, nullable=False)
 
-    mentions = relationship("Mention", primaryjoin="Mention.msg_id == Message.id")
+    mentions = relationship(
+        "Mention", primaryjoin="Mention.msg_id == Message.id"
+    )
     attachments = relationship("Attachment")
     epoch = relationship(
         "Epoch",
@@ -51,10 +55,12 @@ class Attachment(Base):
 class Reaction(Base):
     __tablename__ = "reaction"
 
-    msg_id = Column(String, ForeignKey("message.id"),
-                     primary_key=True, nullable=False)
-    member_id = Column(String, ForeignKey("member.id"),
-                  primary_key=True, nullable=False)
+    msg_id = Column(
+        String, ForeignKey("message.id"), primary_key=True, nullable=False
+    )
+    member_id = Column(
+        String, ForeignKey("member.id"), primary_key=True, nullable=False
+    )
     emoji = Column(String, primary_key=True, nullable=False)
     timestamp = Column(DateTime)
 
@@ -85,8 +91,9 @@ class Score(Base):
     __tablename__ = "score"
 
     epoch = Column(Integer, primary_key=True, index=True, nullable=False)
-    member_id = Column(String, ForeignKey("member.id"),
-                     primary_key=True, nullable=False)
+    member_id = Column(
+        String, ForeignKey("member.id"), primary_key=True, nullable=False
+    )
     score = Column(Integer, nullable=False)
 
 

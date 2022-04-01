@@ -1,18 +1,14 @@
-from datetime import date, datetime
+from datetime import date
+
 import pytest
 import sqlalchemy
-from fastapi import Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from api import schemas
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from api import schemas
-
 from ..database import Base
-from ..main import app, get_db, token
-from ..settings import get_settings
-
+from ..main import app, get_db
 
 SQLALCHEMY_DATABASE_URL = 'sqlite:///./testdb.db'
 engine = create_engine(
@@ -44,10 +40,14 @@ def session():
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
 
-    session.add(schemas.Epoch(id=1, start=date(2022, 1, 1), end=date(2022, 4, 1)))
-    session.add(schemas.Epoch(id=2, start=date(2022, 4, 1), end=date(2022, 4, 3)))
-    session.add(schemas.Epoch(id=3, start=date(2022, 4, 3), end=date(2022, 4, 10)))
-    session.add(schemas.Epoch(id=4, start=date(2022, 4, 10), end=date(2022, 4, 17)))
+    session.add(schemas.Epoch(id=1, start=date(
+        2022, 1, 1), end=date(2022, 4, 1)))
+    session.add(schemas.Epoch(id=2, start=date(
+        2022, 4, 1), end=date(2022, 4, 3)))
+    session.add(schemas.Epoch(id=3, start=date(
+        2022, 4, 3), end=date(2022, 4, 10)))
+    session.add(schemas.Epoch(id=4, start=date(
+        2022, 4, 10), end=date(2022, 4, 17)))
     session.commit()
 
     # Begin a nested transaction (using SAVEPOINT).

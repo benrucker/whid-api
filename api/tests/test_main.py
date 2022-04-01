@@ -1,13 +1,10 @@
 from datetime import datetime
 from unittest.mock import patch
-from fastapi.testclient import TestClient
-import pytest
 
+import pytest
 from api.enums import ChannelType
 
-from ..main import app
 from .setup import client, session
-
 
 DAY_BEFORE_EPOCH = datetime(2020, 1, 1)
 DAY_IN_FIRST_EPOCH = datetime(2022, 3, 15)

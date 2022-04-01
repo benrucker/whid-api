@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, tzinfo
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -79,7 +79,8 @@ def get_all_members(db: Session):
 
 
 def get_member(db: Session, member_id: int):
-    member = db.query(schemas.Member).filter(schemas.Member.id == member_id).first()
+    member = db.query(schemas.Member).filter(
+        schemas.Member.id == member_id).first()
     if member is None:
         raise KeyError()
     return member
@@ -100,7 +101,7 @@ def add_default_score_if_necessary(db: Session, member_id: int):
     try:
         get_scores_for_user_with_date(db, member_id)
         print('got score for user', member_id)
-    except: 
+    except:
         db.add(schemas.Score(
             member_id=member_id,
             epoch=get_current_epoch(db),
@@ -117,6 +118,7 @@ def update_member(db: Session, member_id: int, member: dict):
     db.refresh(db_member)
     return db_member
 
+
 def get_epochs(db: Session) -> list[schemas.Epoch]:
     epochs = db.query(schemas.Epoch).all()
     if not epochs or len(epochs) == 0:
@@ -127,7 +129,8 @@ def get_epochs(db: Session) -> list[schemas.Epoch]:
 def get_epoch(db: Session, epoch: Epoch | int) -> schemas.Epoch:
     epoch = epoch_to_int(db, epoch)
 
-    db_epoch = db.query(schemas.Epoch).filter(schemas.Epoch.id == epoch).first()
+    db_epoch = db.query(schemas.Epoch).filter(
+        schemas.Epoch.id == epoch).first()
     if not db_epoch:
         raise KeyError(f'No epoch found {epoch}')
     return db_epoch

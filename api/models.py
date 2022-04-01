@@ -1,7 +1,8 @@
 from datetime import date, datetime
+
 from pydantic import BaseModel, HttpUrl
 
-from .enums import VoiceEventType, ChannelType
+from .enums import ChannelType, VoiceEventType
 
 
 class MissingData(BaseModel):
@@ -154,6 +155,7 @@ class ScoreCreate(ScoreBase):
 
 class ScoreDate(ScoreBase):
     date: date
+
     class Config:
         orm_mode = True
 
@@ -161,6 +163,7 @@ class ScoreDate(ScoreBase):
 class ScoreNameDate(ScoreBase):
     date: date
     name: str
+
     class Config:
         orm_mode = True
 

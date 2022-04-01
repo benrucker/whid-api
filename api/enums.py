@@ -1,6 +1,7 @@
 
 from enum import Enum
 
+
 class Epoch(str, Enum):
     CURR = "current"
     PREV = "previous"
