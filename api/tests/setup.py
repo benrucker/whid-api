@@ -45,9 +45,9 @@ def session():
     session = TestingSessionLocal(bind=connection)
 
     session.add(schemas.Epoch(id=1, start=date(2022, 1, 1), end=date(2022, 4, 1)))
-    session.add(schemas.Epoch(id=2, start=date(2022, 4, 1), end=date(2022, 4, 8)))
-    session.add(schemas.Epoch(id=3, start=date(2022, 4, 8), end=date(2022, 4, 15)))
-    session.add(schemas.Epoch(id=4, start=date(2022, 4, 15), end=date(2022, 4, 22)))
+    session.add(schemas.Epoch(id=2, start=date(2022, 4, 1), end=date(2022, 4, 3)))
+    session.add(schemas.Epoch(id=3, start=date(2022, 4, 3), end=date(2022, 4, 10)))
+    session.add(schemas.Epoch(id=4, start=date(2022, 4, 10), end=date(2022, 4, 17)))
     session.commit()
 
     # Begin a nested transaction (using SAVEPOINT).

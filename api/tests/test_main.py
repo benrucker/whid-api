@@ -55,15 +55,6 @@ def add_a_channel_and_member(client):
     assert response.status_code == 200
 
 
-# def test_epochs_i_guess(client):
-#     response = client.get(
-#         "/epoch/all",
-#         headers=AUTH,
-#     )
-#     print(response.json())
-#     assert False
-
-
 class TestMessages:
     def test_message(self, client):
         response = client.get(
@@ -1215,7 +1206,7 @@ class TestScores:
         scores = {x['score'] for x in data}
         assert scores == {2, 4, 750}
         dates = {x['date'] for x in data}
-        assert dates == {'2022-04-01', '2022-04-08', '2022-01-01'}
+        assert dates == {'2022-04-01', '2022-04-03', '2022-01-01'}
 
     def test_getting_scores_for_epoch_includes_name(self, client):
         add_a_channel_and_member(client)
@@ -1314,7 +1305,7 @@ class TestScores:
         assert len(response.json()) == 3
         print(response.json())
         dates = {x['date'] for x in response.json()}
-        assert dates == {'2022-04-08'}
+        assert dates == {'2022-04-03'}
         names = {x['name'] for x in response.json()}
         assert names == {'nickname', 'nickname2', 'nickname3'}
 
@@ -1346,7 +1337,7 @@ class TestReactions:
                 "msg_id": 1,
                 "member_id": 1,
                 "emoji": "🐼",
-                "timestamp": "2022-04-12T00:00:00",
+                "timestamp": str(DAY_IN_THIRD_EPOCH),
             }
         )
         assert response.status_code == 200
@@ -1360,7 +1351,8 @@ class TestReactions:
         assert response.json()[0]['member_id'] == '1'
         assert response.json()[0]['msg_id'] == '1'
         assert response.json()[0]['emoji'] == '🐼'
-        assert response.json()[0]['timestamp'] == '2022-04-12T00:00:00'
+        assert datetime.fromisoformat(response.json()[0]['timestamp']) \
+            == DAY_IN_THIRD_EPOCH
 
         response = client.get(
             "/reaction?member_id=1",
@@ -1371,8 +1363,8 @@ class TestReactions:
         assert response.json()[0]['member_id'] == '1'
         assert response.json()[0]['msg_id'] == '1'
         assert response.json()[0]['emoji'] == '🐼'
-        assert response.json()[0]['timestamp'] == '2022-04-12T00:00:00'
-
+        assert datetime.fromisoformat(response.json()[0]['timestamp']) \
+            == DAY_IN_THIRD_EPOCH
         # fail when epoch has none
         response = client.get(
             "/reaction?epoch=previous&member_id=1",
