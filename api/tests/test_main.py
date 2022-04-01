@@ -1205,7 +1205,7 @@ class TestScores:
         dates = {x['date'] for x in data}
         assert dates == {'2022-04-01', '2022-04-03', '2022-01-01'}
 
-    def test_getting_scores_for_epoch_includes_name(self, client):
+    def test_getting_scores_for_epoch_includes_name_and_not_bots(self, client):
         add_a_channel_and_member(client)
 
         # add two more members
@@ -1228,6 +1228,18 @@ class TestScores:
                 "username": "test3",
                 "nickname": "nickname3",
                 "numbers": "1112",
+            }
+        )
+        assert response.status_code == 200
+        repsonse = client.put(
+            "/member/4",
+            headers=AUTH,
+            json={
+                "id": 4,
+                "username": "test4",
+                "nickname": "nickname4",
+                "numbers": "1113",
+                "bot": True,
             }
         )
         assert response.status_code == 200

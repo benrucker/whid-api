@@ -298,7 +298,7 @@ def get_scores(epoch: Epoch | int, db: Session = Depends(get_db)):
 )
 def get_scores(epoch: Epoch | int, db: Session = Depends(get_db)):
     try:
-        return crud.get_scores_with_name_and_date(db, epoch)
+        return crud.get_human_scores_with_name_and_date(db, epoch)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No scores found for given epoch"

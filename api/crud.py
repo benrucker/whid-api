@@ -205,12 +205,13 @@ def get_scores(db: Session, epoch: Epoch | int):
     return scores
 
 
-def get_scores_with_name_and_date(db: Session, epoch: Epoch | int):
+def get_human_scores_with_name_and_date(db: Session, epoch: Epoch | int):
     epoch = get_epoch(db, epoch)
     scores = (
         db.query(schemas.Score, schemas.Member)
         .filter(schemas.Score.epoch == epoch.id)
         .join(schemas.Member, schemas.Score.member_id == schemas.Member.id)
+        .filter(schemas.Member.bot == False)
         .all()
     )
     if not scores:
