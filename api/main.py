@@ -296,9 +296,12 @@ def get_scores(epoch: Epoch | int, db: Session = Depends(get_db)):
     response_model=list[models.ScoreNameDate],
     tags=["Scores"],
 )
-def get_scores(epoch: Epoch | int, db: Session = Depends(get_db)):
+def get_scores(epoch: Epoch | int, bots: bool = False, db: Session = Depends(get_db)):
     try:
-        return crud.get_human_scores_with_name_and_date(db, epoch)
+        if bots:
+            return crud.get_scores_with_name_and_date(db, epoch)
+        else:
+            return crud.get_human_scores_with_name_and_date(db, epoch)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No scores found for given epoch"

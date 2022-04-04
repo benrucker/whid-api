@@ -205,6 +205,22 @@ def get_scores(db: Session, epoch: Epoch | int):
     return scores
 
 
+def get_scores_with_name_and_date(db: Session, epoch: Epoch | int):
+    epoch = get_epoch(db, epoch)
+    scores = (
+        db.query(schemas.Score, schemas.Member)
+        .filter(schemas.Score.epoch == epoch.id)
+        .join(schemas.Member, schemas.Score.member_id == schemas.Member.id)
+        .all()
+    )
+    if not scores:
+        raise KeyError()
+    for score, member in scores:
+        score.name = member.nickname if member.nickname else member.username
+        score.date = epoch.start
+    return [score for score, _ in scores]
+
+
 def get_human_scores_with_name_and_date(db: Session, epoch: Epoch | int):
     epoch = get_epoch(db, epoch)
     scores = (

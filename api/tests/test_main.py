@@ -1263,6 +1263,11 @@ class TestScores:
                     "member_id": 3,
                     "score": 8,
                 },
+                {
+                    "epoch": 1,
+                    "member_id": 4,
+                    "score": 8,
+                },
             ]
         )
         assert response.status_code == 200
@@ -1278,6 +1283,85 @@ class TestScores:
         assert dates == {'2022-01-01'}
         names = {x['name'] for x in response.json()}
         assert names == {'nickname', 'nickname2', 'nickname3'}
+
+    def test_getting_scores_for_epoch_includes_name_and_bots(self, client):
+        add_a_channel_and_member(client)
+
+        # add two more members
+        response = client.put(
+            "/member/2",
+            headers=AUTH,
+            json={
+                "id": 2,
+                "username": "test2",
+                "nickname": "nickname2",
+                "numbers": "1111",
+            }
+        )
+        assert response.status_code == 200
+        response = client.put(
+            "/member/3",
+            headers=AUTH,
+            json={
+                "id": 3,
+                "username": "test3",
+                "nickname": "nickname3",
+                "numbers": "1112",
+            }
+        )
+        assert response.status_code == 200
+        repsonse = client.put(
+            "/member/4",
+            headers=AUTH,
+            json={
+                "id": 4,
+                "username": "test4",
+                "nickname": "nickname4",
+                "numbers": "1113",
+                "bot": True,
+            }
+        )
+        assert response.status_code == 200
+
+        response = client.post(
+            "/scores",
+            headers=AUTH,
+            json=[
+                {
+                    "epoch": 1,
+                    "member_id": 1,
+                    "score": 2,
+                },
+                {
+                    "epoch": 1,
+                    "member_id": 2,
+                    "score": 4,
+                },
+                {
+                    "epoch": 1,
+                    "member_id": 3,
+                    "score": 8,
+                },
+                {
+                    "epoch": 1,
+                    "member_id": 4,
+                    "score": 8,
+                },
+            ]
+        )
+        assert response.status_code == 200
+
+        response = client.get(
+            "/scores/named/1?bots=true",
+            headers=AUTH,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 4
+        print(response.json())
+        dates = {x['date'] for x in response.json()}
+        assert dates == {'2022-01-01'}
+        names = {x['name'] for x in response.json()}
+        assert names == {'nickname', 'nickname2', 'nickname3', 'nickname4'}
 
     def test_latest_scores(self, client):
         add_a_channel_and_member(client)
