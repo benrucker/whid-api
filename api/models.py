@@ -168,6 +168,15 @@ class ScoreNameDate(ScoreBase):
         orm_mode = True
 
 
+class ScoreNameDateBot(ScoreBase):
+    date: date
+    name: str
+    bot: bool
+
+    class Config:
+        orm_mode = True
+
+
 class Score(ScoreBase):
 
     class Config:

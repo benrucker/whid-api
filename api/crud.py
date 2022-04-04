@@ -216,6 +216,7 @@ def get_scores_with_name_and_date(db: Session, epoch: Epoch | int):
     if not scores:
         raise KeyError()
     for score, member in scores:
+        score.bot = member.bot
         score.name = member.nickname if member.nickname else member.username
         score.date = epoch.start
     return [score for score, _ in scores]
@@ -233,6 +234,7 @@ def get_human_scores_with_name_and_date(db: Session, epoch: Epoch | int):
     if not scores:
         raise KeyError()
     for score, member in scores:
+        score.bot = member.bot
         score.name = member.nickname if member.nickname else member.username
         score.date = epoch.start
     return [score for score, _ in scores]

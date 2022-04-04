@@ -1362,6 +1362,13 @@ class TestScores:
         assert dates == {'2022-01-01'}
         names = {x['name'] for x in response.json()}
         assert names == {'nickname', 'nickname2', 'nickname3', 'nickname4'}
+        names_and_bots = {x['name']: x['bot'] for x in response.json()}
+        assert names_and_bots == {
+            'nickname': False,
+            'nickname2': False,
+            'nickname3': False,
+            'nickname4': True
+        }
 
     def test_latest_scores(self, client):
         add_a_channel_and_member(client)

@@ -293,7 +293,7 @@ def get_scores(epoch: Epoch | int, db: Session = Depends(get_db)):
 
 @app.get(
     "/scores/named/{epoch}",
-    response_model=list[models.ScoreNameDate],
+    response_model=list[models.ScoreNameDateBot],
     tags=["Scores"],
 )
 def get_scores(epoch: Epoch | int, bots: bool = False, db: Session = Depends(get_db)):
