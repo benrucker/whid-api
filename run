@@ -1,1 +1,2 @@
+#!/bin/bash
 .venv/bin/gunicorn -w 25 -k uvicorn.workers.UvicornWorker api.main:app -b "0.0.0.0:23894" --error-logfile '-' --access-logfile '-'
