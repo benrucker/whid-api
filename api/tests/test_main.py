@@ -16,6 +16,20 @@ AUTH = {"Authorization": "Bearer hello"}
 AUTH_WRONG = {"Authorization": "Bearer wrong"}
 
 
+class DayInFourthEpoch: 
+    @ classmethod
+    def setup_class(cls):
+        patcher = patch('api.crud.datetime')
+        mock_dt = patcher.start()
+        mock_dt.now.return_value = DAY_IN_FOURTH_EPOCH
+        mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
+        cls.patcher = patcher
+
+    @ classmethod
+    def teardown_class(cls):
+        cls.patcher.stop()
+
+
 class TestMisc:
     def test_main(self, client):
         response = client.get(
@@ -52,7 +66,7 @@ def add_a_channel_and_member(client):
     assert response.status_code == 200
 
 
-class TestMessages:
+class TestMessages(DayInFourthEpoch):
     def test_message(self, client):
         response = client.get(
             "/message/1",
@@ -297,7 +311,7 @@ class TestMessages:
         assert response.status_code == 404
 
 
-class TestMessagesExistanceResponses:
+class TestMessagesExistanceResponses(DayInFourthEpoch):
     def test_put_message_without_member_or_channel(self, client):
         response = client.put(
             "/message/1",
@@ -442,19 +456,7 @@ class TestMessagesExistanceResponses:
         assert response.status_code == 200
 
 
-class TestMultipleMessages:
-    @ classmethod
-    def setup_class(cls):
-        patcher = patch('api.crud.datetime')
-        mock_dt = patcher.start()
-        mock_dt.now.return_value = DAY_IN_FOURTH_EPOCH
-        mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
-        cls.patcher = patcher
-
-    @ classmethod
-    def teardown_class(cls):
-        cls.patcher.stop()
-
+class TestMultipleMessages(DayInFourthEpoch):
     def test_getting_before_any_messages_fails(self, client):
         response = client.get(
             "/message?member_id=1",
@@ -500,7 +502,7 @@ class TestMultipleMessages:
             headers=AUTH,
             json={
                 "id": '5',
-                "timestamp": str(DAY_IN_FOURTH_EPOCH),
+                "timestamp": str(datetime.now()),
                 "content": "hello",
                 "author": '1',
                 "channel": '1',
@@ -513,7 +515,7 @@ class TestMultipleMessages:
             headers=AUTH,
             json={
                 "id": '2',
-                "timestamp": str(DAY_IN_FOURTH_EPOCH),
+                "timestamp": str(datetime.now()),
                 "content": "hello 2",
                 "author": '1',
                 "channel": '1',
@@ -559,7 +561,7 @@ class TestMultipleMessages:
         assert response.status_code == 404
 
 
-class TestMessageMentions:
+class TestMessageMentions(DayInFourthEpoch):
     def test_message_has_mentions(self, client):
         add_a_channel_and_member(client)
 
@@ -707,7 +709,7 @@ class TestChannels:
         assert response.status_code == 404
 
 
-class TestMembers:
+class TestMembers(DayInFourthEpoch):
     def test_one_member(self, client):
         response = client.get(
             "/member/1",
@@ -814,7 +816,7 @@ class TestMembers:
         assert len(response.json()) == 2
 
 
-class TestBotMembers:
+class TestBotMembers(DayInFourthEpoch):
     def test_one_member(self, client):
         response = client.get(
             "/member/1",
@@ -1568,19 +1570,7 @@ class TestBeforeAnyEpoch:
         assert response.status_code == 404
 
 
-class TestDuringThirdEpoch:
-    @ classmethod
-    def setup_class(cls):
-        patcher = patch('api.crud.datetime')
-        mock_dt = patcher.start()
-        mock_dt.now.return_value = DAY_IN_FOURTH_EPOCH
-        mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
-        cls.patcher = patcher
-
-    @ classmethod
-    def teardown_class(cls):
-        cls.patcher.stop()
-
+class TestDuringFourthEpoch(DayInFourthEpoch):
     def test_current_epoch_is_fourth(self, client):
         response = client.get(
             "/epoch/current",
